@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telecommande Porte</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      text-align: center;
+      padding: 40px 30px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 24px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      max-width: 400px;
+      width: 90%;
+    }
+    .icon { font-size: 4em; margin-bottom: 10px; transition: all 0.3s; }
+    h1 { font-size: 1.6em; margin-bottom: 5px; }
+    .subtitle { opacity: 0.5; font-size: 0.85em; margin-bottom: 25px; }
+    
+    .status { font-size: 1.1em; margin: 20px 0; padding: 12px 20px; border-radius: 12px; transition: all 0.3s; }
+    .status.on  { background: rgba(0,255,100,0.15); color: #00ff64; }
+    .status.off { background: rgba(255,50,50,0.15);  color: #ff5050; }
+    .status.waiting { background: rgba(255,200,0,0.15); color: #ffc800; }
+
+    .btn {
+      display: block; width: 100%; padding: 18px; font-size: 1.2em; font-weight: 700;
+      border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s; color: white; margin: 10px 0;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-on  { background: linear-gradient(135deg, #00b09b, #96c93d); }
+    .btn-on:hover  { box-shadow: 0 5px 25px rgba(0,176,155,0.4); }
+    .btn-off { background: linear-gradient(135deg, #e53935, #e35d5b); }
+    .btn-off:hover { box-shadow: 0 5px 25px rgba(229,57,53,0.4); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .separator { height: 1px; background: rgba(255,255,255,0.1); margin: 18px 0; }
+    .section-title { font-size: 0.75em; opacity: 0.5; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: left; }
+    
+    /* Inputs et petits boutons */
+    .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .input-text { flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: white; outline: none; }
+    .btn-small { padding: 10px 16px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12); color: white; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+    .btn-small:hover { background: rgba(255,255,255,0.2); }
+
+    /* Bouton alarme */
+    .btn-alarm { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a1a; user-select: none; touch-action: none; font-size: 1em; padding: 15px; }
+    .btn-alarm.alarming { background: linear-gradient(135deg, #ff4e00, #ec9f05); box-shadow: 0 0 30px rgba(255,78,0,0.6); animation: alarmPulse 0.4s infinite alternate; }
+    @keyframes alarmPulse { from { transform: scale(1); } to { transform: scale(1.02); } }
+
+    .connexion { margin-top: 25px; padding: 10px; border-radius: 10px; font-size: 0.8em; }
+    .connexion.ok      { background: rgba(0,255,100,0.1); color: #00ff64; }
+    .connexion.ko      { background: rgba(255,50,50,0.1); color: #ff5050; }
+    .connexion.loading { background: rgba(255,200,0,0.1); color: #ffc800; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .dot.green  { background: #00ff64; } .dot.red { background: #ff5050; } .dot.yellow { background: #ffc800; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* Clavier PIN */
+    .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 25px 0; }
+    .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); transition: all 0.2s; }
+    .pin-dot.filled { background: #00ff64; border-color: #00ff64; box-shadow: 0 0 10px rgba(0,255,100,0.4); }
+    .pin-dot.error  { background: #ff5050; border-color: #ff5050; box-shadow: 0 0 10px rgba(255,50,50,0.4); }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 260px; margin: 0 auto; }
+    .key { padding: 16px; font-size: 1.4em; font-weight: 700; border: none; border-radius: 12px; background: rgba(255,255,255,0.1); color: white; cursor: pointer; transition: 0.15s; }
+    .key:active { transform: scale(0.93); background: rgba(255,255,255,0.25); }
+    .key-del { background: rgba(255,50,50,0.2); font-size: 1em; }
+    .error-msg { color: #ff5050; margin-top: 15px; font-size: 0.9em; min-height: 1.2em; }
+    
+    .text-link { margin-top: 20px; font-size: 0.85em; opacity: 0.6; cursor: pointer; text-decoration: underline; display: inline-block; }
+    .text-link:hover { opacity: 1; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="lockScreen">
+    <div class="icon">&#128274;</div>
+    <h1>Porte Connectee</h1>
+    <div class="subtitle">Entrez le code d'acces admin</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="keypad">
+      <button class="key" onclick="addDigit('1')">1</button><button class="key" onclick="addDigit('2')">2</button><button class="key" onclick="addDigit('3')">3</button>
+      <button class="key" onclick="addDigit('4')">4</button><button class="key" onclick="addDigit('5')">5</button><button class="key" onclick="addDigit('6')">6</button>
+      <button class="key" onclick="addDigit('7')">7</button><button class="key" onclick="addDigit('8')">8</button><button class="key" onclick="addDigit('9')">9</button>
+      <button class="key key-del" onclick="clearPin()">&#9003;</button><button class="key" onclick="addDigit('0')">0</button><button class="key key-del" onclick="removeDigit()">&#8592;</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <span class="text-link" onclick="showGuestScreen()">Je suis un invité (utiliser un code)</span>
+  </div>
+
+  <div class="container hidden" id="guestScreen">
+    <div class="icon">&#127915;</div>
+    <h1>Acces Invite</h1>
+    <div class="subtitle">Entrez le code fourni par l'administrateur</div>
+    <div class="input-row" style="margin-top: 20px;">
+      <input type="text" id="guestCodeInput" class="input-text" placeholder="Ex: 8492" maxlength="10" style="text-align:center; font-size:1.2em; letter-spacing:2px;">
+    </div>
+    <button class="btn btn-on" onclick="useGuestCode()" id="btnUseCode" disabled>OUVRIR LA PORTE</button>
+    <div class="error-msg" id="guestMsg"></div>
+    
+    <div class="connexion loading" id="connexionGuest">
+      <span class="dot yellow"></span> Connexion au serveur...
+    </div>
+    <span class="text-link" onclick="showAdminScreen()">Retour a la connexion Admin</span>
+  </div>
+
+  <div class="container hidden" id="controlScreen">
+    <div class="icon" id="icon">&#128274;</div>
+    <h1>Panneau Admin</h1>
+    <div class="status waiting" id="status">Connexion en cours...</div>
+
+    <button class="btn btn-on"  id="btnOn"  onclick="send('ON')"  disabled>OUVRIR</button>
+    <button class="btn btn-off" id="btnOff" onclick="send('OFF')" disabled>FERMER</button>
+
+    <div class="separator"></div>
+    <div class="section-title">&#128273; Generer un code jetable</div>
+    <div class="input-row">
+      <input type="text" id="newCodeInput" class="input-text" placeholder="Code a 4 chiffres (ex: 1234)">
+      <button class="btn-small" onclick="generateAndAddCode()" id="btnAddCode" disabled>Ajouter</button>
+    </div>
+    <div style="font-size:0.85em; color:#00ff64; text-align:left; margin-bottom:10px;" id="codeStatus"></div>
+
+    <div class="separator"></div>
+    <div class="section-title">&#128276; Alarme sonore</div>
+    <button class="btn btn-alarm" id="btnAlarme" disabled>Maintenir pour activer</button>
+
+    <div class="separator"></div>
+    <div class="section-title">&#128272; Notifications (Bark)</div>
+    <div class="input-row">
+      <input class="input-text" id="barkKey" type="text" placeholder="Votre cle Bark..." autocomplete="off">
+      <button class="btn-small" onclick="saveBarkKey()">Sauver</button>
+    </div>
+
+    <div class="connexion loading" id="connexionAdmin">
+      <span class="dot yellow" id="dot"></span> Connexion au serveur...
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    // ===== CONFIGURATION =====
+    const CODE_PIN = '1234'; // Code administrateur de la page web
+    
+    // Sujets MQTT
+    const topicCmd      = 'porte-vincent-2026/commande';
+    const topicState    = 'porte-vincent-2026/etat';
+    const topicAddCode  = 'porte-vincent-2026/addcode';
+    const topicUseCode  = 'porte-vincent-2026/usecode';
+    const topicCodeResult = 'porte-vincent-2026/coderesult';
+    const topicCodeUsed = 'porte-vincent-2026/codeused';
+    const topicAlarme   = 'porte-vincent-2026/alarme';
+
+    let client = null;
+    let currentState = 'OFF';
+    let alarmActive = false;
+    let isConnected = false;
+
+    // --- Navigation Ecrans ---
+    function showGuestScreen() {
+      document.getElementById('lockScreen').classList.add('hidden');
+      document.getElementById('controlScreen').classList.add('hidden');
+      document.getElementById('guestScreen').classList.remove('hidden');
+      if (!isConnected) connectMQTT();
+    }
+    
+    function showAdminScreen() {
+      document.getElementById('guestScreen').classList.add('hidden');
+      document.getElementById('controlScreen').classList.add('hidden');
+      document.getElementById('lockScreen').classList.remove('hidden');
+      clearPin();
+    }
+
+    // --- Logique PIN Admin ---
+    let pinInput = '';
+    let attempts = 0;
+    
+    function addDigit(d) {
+      if (pinInput.length >= 4) return;
+      pinInput += d;
+      updateDots();
+      if (pinInput.length === 4) setTimeout(checkPin, 200);
+    }
+
+    function removeDigit() {
+      pinInput = pinInput.slice(0, -1);
+      updateDots();
+      document.getElementById('errorMsg').textContent = '';
+    }
+
+    function clearPin() {
+      pinInput = '';
+      updateDots();
+      document.getElementById('errorMsg').textContent = '';
+    }
+
+    function updateDots() {
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('d' + i).className = 'pin-dot' + (i < pinInput.length ? ' filled' : '');
+      }
+    }
+
+    function checkPin() {
+      if (pinInput === CODE_PIN) {
+        document.getElementById('lockScreen').classList.add('hidden');
+        document.getElementById('controlScreen').classList.remove('hidden');
+        if (!isConnected) connectMQTT();
+        loadBarkKey();
+      } else {
+        attempts++;
+        for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
+        if (attempts >= 5) {
+          document.getElementById('errorMsg').textContent = 'Trop de tentatives. Rechargez la page.';
+          document.querySelectorAll('.key').forEach(k => k.disabled = true);
+        } else {
+          document.getElementById('errorMsg').textContent = 'Code incorrect';
+          setTimeout(clearPin, 600);
+        }
+      }
+    }
+
+    // --- Logique Invité (Codes Jetables) ---
+    function useGuestCode() {
+      const code = document.getElementById('guestCodeInput').value.trim();
+      if (!code || !client) return;
+      
+      document.getElementById('guestMsg').style.color = '#ffc800';
+      document.getElementById('guestMsg').textContent = 'Vérification du code...';
+      document.getElementById('btnUseCode').disabled = true;
+      
+      client.publish(topicUseCode, code);
+      
+      // Timeout au cas où la porte ne répond pas
+      setTimeout(() => {
+        if (document.getElementById('guestMsg').textContent === 'Vérification du code...') {
+           document.getElementById('guestMsg').style.color = '#ff5050';
+           document.getElementById('guestMsg').textContent = 'Délai dépassé. La porte est-elle en ligne ?';
+           document.getElementById('btnUseCode').disabled = false;
+        }
+      }, 5000);
+    }
+
+    // --- Logique Admin (Ajout Codes) ---
+    function generateAndAddCode() {
+      const input = document.getElementById('newCodeInput');
+      let code = input.value.trim();
+      
+      // Génère un code aléatoire à 4 chiffres si le champ est vide
+      if (!code) code = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      if (client && isConnected) {
+        client.publish(topicAddCode, code);
+        document.getElementById('codeStatus').textContent = 'Code ' + code + ' ajouté avec succès !';
+        input.value = '';
+        setTimeout(() => { document.getElementById('codeStatus').textContent = ''; }, 3000);
+      }
+    }
+
+    // --- MQTT Connect ---
+    function connectMQTT() {
+      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: 'web-porte-' + Math.random().toString(36).substr(2, 8),
+        clean: true
+      });
+
+      client.on('connect', function () {
+        isConnected = true;
+        
+        // UI Admin
+        document.getElementById('connexionAdmin').className = 'connexion ok';
+        document.getElementById('connexionAdmin').innerHTML = '<span class="dot green"></span> Connecté au cloud';
+        document.getElementById('btnOn').disabled = false;
+        document.getElementById('btnOff').disabled = false;
+        document.getElementById('btnAddCode').disabled = false;
+        document.getElementById('btnAlarme').disabled = false;
+
+        // UI Guest
+        document.getElementById('connexionGuest').className = 'connexion ok';
+        document.getElementById('connexionGuest').innerHTML = '<span class="dot green"></span> Connecté au cloud';
+        document.getElementById('btnUseCode').disabled = false;
+
+        // Souscriptions
+        client.subscribe(topicState);
+        client.subscribe(topicCodeUsed);
+        client.subscribe(topicCodeResult);
+      });
+
+      client.on('message', function (topic, message) {
+        const msg = message.toString();
+
+        if (topic === topicState) {
+          currentState = msg;
+          updateControlUI();
+        } 
+        else if (topic === topicCodeUsed) {
+          const notifTitle = 'Porte ouverte !';
+          const notifBody  = 'Le code invité ' + msg + ' a été utilisé.';
+          sendBarkNotification(notifTitle, notifBody);
+        }
+        else if (topic === topicCodeResult) {
+          const guestMsgEl = document.getElementById('guestMsg');
+          if (msg === 'OK') {
+            guestMsgEl.style.color = '#00ff64';
+            guestMsgEl.textContent = 'Code accepté ! Ouverture de la porte...';
+            document.getElementById('guestCodeInput').value = '';
+          } else {
+            guestMsgEl.style.color = '#ff5050';
+            guestMsgEl.textContent = 'Code invalide ou expiré.';
+          }
+          document.getElementById('btnUseCode').disabled = false;
+        }
+      });
+
+      client.on('offline', function () {
+        isConnected = false;
+        document.querySelectorAll('.connexion').forEach(el => {
+          el.className = 'connexion ko';
+          el.innerHTML = '<span class="dot red"></span> Déconnecté';
+        });
+        document.getElementById('btnOn').disabled = true;
+        document.getElementById('btnOff').disabled = true;
+        document.getElementById('btnAddCode').disabled = true;
+        document.getElementById('btnUseCode').disabled = true;
+        document.getElementById('btnAlarme').disabled = true;
+      });
+    }
+
+    function updateControlUI() {
+      const iconEl   = document.getElementById('icon');
+      const statusEl = document.getElementById('status');
+      
+      if (currentState === 'ON') {
+        iconEl.innerHTML = '&#128275;';
+        statusEl.className = 'status on';
+        statusEl.textContent = 'Etat : OUVERT (Auto-fermeture dans 3s)';
+      } else {
+        iconEl.innerHTML = '&#128274;';
+        statusEl.className = 'status off';
+        statusEl.textContent = 'Etat : FERME';
+      }
+    }
+
+    function send(command) {
+      if (client && isConnected) client.publish(topicCmd, command);
+    }
+
+    // --- Alarme ---
+    function startAlarm() {
+      if (!client || alarmActive || !isConnected) return;
+      alarmActive = true;
+      const btn = document.getElementById('btnAlarme');
+      btn.classList.add('alarming');
+      btn.textContent = '🔔 ALARME EN COURS...';
+      client.publish(topicAlarme, 'ON');
+    }
+
+    function stopAlarm() {
+      if (!client || !alarmActive || !isConnected) return;
+      alarmActive = false;
+      const btn = document.getElementById('btnAlarme');
+      btn.classList.remove('alarming');
+      btn.textContent = 'Maintenir pour activer';
+      client.publish(topicAlarme, 'OFF');
+    }
+
+    const btnAlarme = document.getElementById('btnAlarme');
+    btnAlarme.addEventListener('mousedown',  startAlarm);
+    btnAlarme.addEventListener('mouseup',    stopAlarm);
+    btnAlarme.addEventListener('mouseleave', stopAlarm);
+    btnAlarme.addEventListener('touchstart', function(e) { e.preventDefault(); startAlarm(); });
+    btnAlarme.addEventListener('touchend',   stopAlarm);
+    btnAlarme.addEventListener('touchcancel',stopAlarm);
+
+    // --- Bark API ---
+    function loadBarkKey() {
+      const saved = localStorage.getItem('barkDeviceKey');
+      if (saved) document.getElementById('barkKey').value = saved;
+    }
+
+    function saveBarkKey() {
+      const key = document.getElementById('barkKey').value.trim();
+      if (!key) {
+        localStorage.removeItem('barkDeviceKey');
+        alert("Clé supprimée, notifications désactivées.");
+        return;
+      }
+      localStorage.setItem('barkDeviceKey', key);
+      alert("Clé sauvegardée ! Test de notification envoyé.");
+      sendBarkNotification('Test', 'Notifications configurées avec succès !');
+    }
+
+    function sendBarkNotification(title, body) {
+      const key = localStorage.getItem('barkDeviceKey');
+      if (!key) return;
+      const url = 'https://api.day.app/' + key + '/' + encodeURIComponent(title) + '/' + encodeURIComponent(body) + '?sound=bell&level=active';
+      fetch(url).catch(() => {});
+    }
+  </script>
+</body>
+</html>
