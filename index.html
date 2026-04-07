@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telecommande Porte</title>
+  <title>Porte Connectee</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -15,158 +15,47 @@
       justify-content: center;
       align-items: center;
     }
-    .container {
+    .screen {
       text-align: center;
       padding: 40px 30px;
       background: rgba(255,255,255,0.06);
       border-radius: 24px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-      max-width: 400px;
+      max-width: 420px;
       width: 90%;
     }
-    .icon { font-size: 5em; margin-bottom: 15px; transition: all 0.3s; }
-    h1 { font-size: 1.6em; margin-bottom: 5px; }
+    .icon { font-size: 4em; margin-bottom: 15px; transition: all 0.3s; }
+    h1 { font-size: 1.5em; margin-bottom: 5px; }
     .subtitle { opacity: 0.5; font-size: 0.85em; margin-bottom: 25px; }
-    .status {
-      font-size: 1.1em;
-      margin: 20px 0;
-      padding: 12px 20px;
-      border-radius: 12px;
-      transition: all 0.3s;
-    }
-    .status.on  { background: rgba(0,255,100,0.15); color: #00ff64; }
-    .status.off { background: rgba(255,50,50,0.15);  color: #ff5050; }
-    .status.waiting { background: rgba(255,200,0,0.15); color: #ffc800; }
+    .hidden { display: none !important; }
 
-    .btn {
+    /* === ECRAN CHOIX === */
+    .choice-btn {
       display: block;
       width: 100%;
-      padding: 18px;
-      font-size: 1.2em;
+      padding: 20px;
+      font-size: 1.1em;
       font-weight: 700;
       border: none;
       border-radius: 14px;
       cursor: pointer;
-      transition: all 0.2s;
       color: white;
       margin: 10px 0;
+      transition: all 0.2s;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn-on  { background: linear-gradient(135deg, #00b09b, #96c93d); }
-    .btn-on:hover  { box-shadow: 0 5px 25px rgba(0,176,155,0.4); }
-    .btn-off { background: linear-gradient(135deg, #e53935, #e35d5b); }
-    .btn-off:hover { box-shadow: 0 5px 25px rgba(229,57,53,0.4); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .choice-btn:active { transform: scale(0.97); }
+    .choice-admin { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .choice-admin:hover { box-shadow: 0 5px 25px rgba(102,126,234,0.4); }
+    .choice-code { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .choice-code:hover { box-shadow: 0 5px 25px rgba(245,87,108,0.4); }
 
-    /* Bouton alarme */
-    .separator {
-      height: 1px;
-      background: rgba(255,255,255,0.1);
-      margin: 18px 0;
-    }
-    .alarm-label {
-      font-size: 0.75em;
-      opacity: 0.5;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .btn-alarm {
-      background: linear-gradient(135deg, #f7971e, #ffd200);
-      color: #1a1a1a;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-    }
-    .btn-alarm:hover { box-shadow: 0 5px 25px rgba(255,210,0,0.35); }
-    .btn-alarm.alarming {
-      background: linear-gradient(135deg, #ff4e00, #ec9f05);
-      box-shadow: 0 0 30px rgba(255,78,0,0.6);
-      animation: alarmPulse 0.4s infinite alternate;
-    }
-    @keyframes alarmPulse {
-      from { transform: scale(1); }
-      to   { transform: scale(1.02); }
-    }
-
-    /* Bark notifications */
-    .bark-section {
-      margin-top: 8px;
-      text-align: left;
-    }
-    .bark-label {
-      font-size: 0.75em;
-      opacity: 0.5;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-      display: block;
-    }
-    .bark-row {
+    /* === CLAVIER PIN === */
+    .pin-dots {
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
+      margin: 25px 0;
     }
-    .bark-input {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.08);
-      color: white;
-      font-size: 0.9em;
-      outline: none;
-    }
-    .bark-input::placeholder { opacity: 0.4; }
-    .bark-input:focus { border-color: rgba(255,255,255,0.35); }
-    .bark-save {
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: none;
-      background: rgba(255,255,255,0.12);
-      color: white;
-      font-size: 0.85em;
-      cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-    .bark-save:hover { background: rgba(255,255,255,0.2); }
-    .bark-status {
-      font-size: 0.75em;
-      margin-top: 5px;
-      min-height: 1em;
-      opacity: 0.6;
-    }
-    .bark-status.ok   { color: #00ff64; opacity: 1; }
-    .bark-status.fail { color: #ff5050; opacity: 1; }
-
-    .connexion {
-      margin-top: 25px;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 0.8em;
-    }
-    .connexion.ok      { background: rgba(0,255,100,0.1); color: #00ff64; }
-    .connexion.ko      { background: rgba(255,50,50,0.1); color: #ff5050; }
-    .connexion.loading { background: rgba(255,200,0,0.1); color: #ffc800; }
-
-    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-    .dot.green  { background: #00ff64; }
-    .dot.red    { background: #ff5050; }
-    .dot.yellow { background: #ffc800; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-    /* Ecran code PIN */
-    .lock-screen {
-      text-align: center;
-      padding: 40px 30px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 24px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-      max-width: 400px;
-      width: 90%;
-    }
-    .lock-screen .icon { font-size: 4em; margin-bottom: 10px; }
-    .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 25px 0; }
     .pin-dot {
       width: 18px; height: 18px;
       border-radius: 50%;
@@ -174,7 +63,7 @@
       transition: all 0.2s;
     }
     .pin-dot.filled { background: #00ff64; border-color: #00ff64; box-shadow: 0 0 10px rgba(0,255,100,0.4); }
-    .pin-dot.error  { background: #ff5050; border-color: #ff5050; box-shadow: 0 0 10px rgba(255,50,50,0.4); }
+    .pin-dot.error { background: #ff5050; border-color: #ff5050; }
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -193,21 +82,323 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .key:hover  { background: rgba(255,255,255,0.2); }
-    .key:active { transform: scale(0.93); background: rgba(255,255,255,0.25); }
+    .key:hover { background: rgba(255,255,255,0.2); }
+    .key:active { transform: scale(0.93); }
     .key-del { background: rgba(255,50,50,0.2); font-size: 1em; }
-    .key-del:hover { background: rgba(255,50,50,0.3); }
     .error-msg { color: #ff5050; margin-top: 15px; font-size: 0.9em; min-height: 1.2em; }
-    .hidden { display: none !important; }
+    .back-link { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 0.85em; }
+    .back-link:hover { color: white; }
+
+    /* === CONTROLE ADMIN === */
+    .welcome-msg {
+      font-size: 1.1em;
+      margin-bottom: 15px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.2));
+      border: 1px solid rgba(102,126,234,0.3);
+    }
+    .welcome-msg .name { color: #667eea; font-weight: 900; }
+    .welcome-msg .role { font-size: 0.75em; opacity: 0.6; display: block; margin-top: 2px; }
+    .status {
+      font-size: 1.05em;
+      margin: 15px 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+    .status.on { background: rgba(0,255,100,0.15); color: #00ff64; }
+    .status.off { background: rgba(255,50,50,0.15); color: #ff5050; }
+    .status.waiting { background: rgba(255,200,0,0.15); color: #ffc800; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-size: 1.15em;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: white;
+      margin: 8px 0;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-on { background: linear-gradient(135deg, #00b09b, #96c93d); }
+    .btn-on:hover { box-shadow: 0 5px 25px rgba(0,176,155,0.4); }
+    .btn-off { background: linear-gradient(135deg, #e53935, #e35d5b); }
+    .btn-off:hover { box-shadow: 0 5px 25px rgba(229,57,53,0.4); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* === BOUTON ALARME === */
+    .separator { height: 1px; background: rgba(255,255,255,0.1); margin: 18px 0; }
+    .alarm-label { font-size: 0.75em; opacity: 0.5; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-alarm { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a1a; user-select: none; -webkit-user-select: none; touch-action: none; }
+    .btn-alarm:hover { box-shadow: 0 5px 25px rgba(255,210,0,0.35); }
+    .btn-alarm.alarming { background: linear-gradient(135deg, #ff4e00, #ec9f05); box-shadow: 0 0 30px rgba(255,78,0,0.6); animation: alarmPulse 0.4s infinite alternate; }
+    @keyframes alarmPulse { from { transform: scale(1); } to { transform: scale(1.02); } }
+
+    .connexion {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.8em;
+    }
+    .connexion.ok { background: rgba(0,255,100,0.1); color: #00ff64; }
+    .connexion.ko { background: rgba(255,50,50,0.1); color: #ff5050; }
+    .connexion.loading { background: rgba(255,200,0,0.1); color: #ffc800; }
+    .dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-right: 6px; vertical-align: middle;
+    }
+    .dot.green { background: #00ff64; }
+    .dot.red { background: #ff5050; }
+    .dot.yellow { background: #ffc800; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* === SECTION CODES JETABLES === */
+    .section-title {
+      font-size: 0.95em;
+      font-weight: 700;
+      margin: 25px 0 10px 0;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: #f093fb;
+    }
+    .section-title.gold { color: #ffc800; }
+    .btn-generate {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      padding: 14px;
+      font-size: 1em;
+    }
+    .btn-generate:hover { box-shadow: 0 5px 25px rgba(245,87,108,0.4); }
+    .generated-code {
+      margin: 15px 0;
+      padding: 18px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 14px;
+      font-size: 2em;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: #f093fb;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .generated-code:hover { background: rgba(255,255,255,0.12); }
+    .generated-code .copy-hint {
+      display: block;
+      font-size: 0.35em;
+      letter-spacing: 1px;
+      opacity: 0.5;
+      margin-top: 5px;
+    }
+    .code-list {
+      text-align: left;
+      margin-top: 10px;
+      font-size: 0.8em;
+    }
+    .code-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      margin: 4px 0;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+    .code-item span { font-family: monospace; letter-spacing: 3px; font-weight: 700; }
+    .code-item .badge { font-size: 0.85em; }
+    .code-item .badge.waiting { color: #ffc800; }
+    .code-item .badge.used { color: #00ff64; }
+    .code-item .badge.expired { color: #ff5050; }
+    .code-item.used { opacity: 0.5; }
+    .code-item.used span:first-child { text-decoration: line-through; }
+    .code-item.expired { opacity: 0.4; }
+    .code-item.expired span:first-child { text-decoration: line-through; color: #ff5050; }
+    .btn-delete {
+      background: rgba(255,50,50,0.2);
+      border: none;
+      color: #ff5050;
+      font-size: 0.9em;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-left: 8px;
+      transition: all 0.15s;
+    }
+    .btn-delete:hover { background: rgba(255,50,50,0.4); }
+    .notif {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95em;
+      z-index: 999;
+      animation: slideDown 0.3s ease-out;
+      background: rgba(0,255,100,0.2);
+      color: #00ff64;
+      border: 1px solid rgba(0,255,100,0.3);
+    }
+    @keyframes slideDown { from { transform: translateX(-50%) translateY(-30px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+
+    /* === ECRAN CODE INVITE === */
+    .code-input-display {
+      font-size: 2.5em;
+      font-weight: 900;
+      letter-spacing: 10px;
+      margin: 20px 0;
+      min-height: 1.3em;
+      color: #f093fb;
+    }
+    .result-msg {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 1.1em;
+      font-weight: 700;
+    }
+    .result-msg.success { background: rgba(0,255,100,0.15); color: #00ff64; }
+    .result-msg.fail { background: rgba(255,50,50,0.15); color: #ff5050; }
+    .result-msg.checking { background: rgba(255,200,0,0.15); color: #ffc800; }
+
+    /* === POPUP MODAL === */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .modal h2 { font-size: 1.2em; margin-bottom: 20px; }
+    .modal-input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      font-size: 1em;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: #667eea; }
+    .modal-input::placeholder { color: rgba(255,255,255,0.3); }
+    .modal-select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: rgba(30,30,60,0.95);
+      color: white;
+      font-size: 1em;
+      margin-bottom: 12px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(255,255,255,0.5)' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .modal-select:focus { border-color: #667eea; }
+    .modal-select option { background: #1a1a2e; color: white; }
+    .date-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .date-field { flex: 1; }
+    .date-label {
+      font-size: 0.75em;
+      opacity: 0.6;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    .modal-date {
+      width: 100%;
+      padding: 12px 10px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: rgba(30,30,60,0.95);
+      color: white;
+      font-size: 0.9em;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      color-scheme: dark;
+    }
+    .modal-date:focus { border-color: #667eea; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 8px; }
+    .modal-btns button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1em;
+      cursor: pointer;
+      color: white;
+    }
+    .modal-btns .btn-cancel { background: rgba(255,255,255,0.1); }
+    .modal-btns .btn-confirm { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+    /* === ADMIN LIST === */
+    .admin-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      margin: 5px 0;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      text-align: left;
+    }
+    .admin-item.expired-admin { opacity: 0.4; border: 1px solid rgba(255,50,50,0.3); }
+    .admin-item .admin-info { flex: 1; }
+    .admin-item .admin-name { font-weight: 700; font-size: 0.95em; }
+    .admin-item .admin-pin { font-family: monospace; opacity: 0.5; font-size: 0.8em; letter-spacing: 2px; }
+    .admin-item .admin-expiry { font-size: 0.75em; margin-top: 3px; }
+    .admin-item .admin-expiry.ok { color: #00ff64; }
+    .admin-item .admin-expiry.soon { color: #ffc800; }
+    .admin-item .admin-expiry.expired { color: #ff5050; }
   </style>
 </head>
 <body>
 
-  <!-- ECRAN CODE PIN -->
-  <div class="lock-screen" id="lockScreen">
-    <div class="icon">&#128274;</div>
+  <!-- ========== ECRAN 1 : CHOIX ========== -->
+  <div class="screen" id="choiceScreen">
+    <div class="icon">🚪</div>
     <h1>Porte Connectee</h1>
-    <div class="subtitle">Entrez le code d'acces admin</div>
+    <div class="subtitle">Controle a distance mondial</div>
+    <button class="choice-btn choice-admin" onclick="showScreen('pinScreen')">🔑 Admin (code PIN)</button>
+    <button class="choice-btn choice-code" onclick="showScreen('guestScreen')">🎫 J'ai un code ephemere</button>
+  </div>
+
+  <!-- ========== ECRAN 2a : PIN ADMIN ========== -->
+  <div class="screen hidden" id="pinScreen">
+    <div class="icon">🔒</div>
+    <h1>Acces Admin</h1>
+    <div class="subtitle">Entrez le code PIN</div>
     <div class="pin-dots" id="pinDots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
@@ -224,54 +415,212 @@
       <button class="key" onclick="addDigit('7')">7</button>
       <button class="key" onclick="addDigit('8')">8</button>
       <button class="key" onclick="addDigit('9')">9</button>
-      <button class="key key-del" onclick="clearPin()">&#9003;</button>
+      <button class="key key-del" onclick="clearPin()">⌫</button>
       <button class="key" onclick="addDigit('0')">0</button>
-      <button class="key key-del" onclick="removeDigit()">&#8592;</button>
+      <button class="key key-del" onclick="removeDigit()">←</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
+    <div class="back-link" onclick="showScreen('choiceScreen')">← Retour</div>
   </div>
 
-  <!-- ECRAN CONTROLE (caché au départ) -->
-  <div class="container hidden" id="controlScreen">
-    <div class="icon" id="icon">&#128274;</div>
-    <h1>Porte Connectee</h1>
-    <div class="subtitle">Controle a distance mondial</div>
+  <!-- ========== ECRAN 2b : CODE INVITE ========== -->
+  <div class="screen hidden" id="guestScreen">
+    <div class="icon">🎫</div>
+    <h1>Code Ephemere</h1>
+    <div class="subtitle">Entrez le code recu</div>
+    <div class="code-input-display" id="codeDisplay">_</div>
+    <div class="keypad">
+      <button class="key" onclick="addGuestDigit('1')">1</button>
+      <button class="key" onclick="addGuestDigit('2')">2</button>
+      <button class="key" onclick="addGuestDigit('3')">3</button>
+      <button class="key" onclick="addGuestDigit('4')">4</button>
+      <button class="key" onclick="addGuestDigit('5')">5</button>
+      <button class="key" onclick="addGuestDigit('6')">6</button>
+      <button class="key" onclick="addGuestDigit('7')">7</button>
+      <button class="key" onclick="addGuestDigit('8')">8</button>
+      <button class="key" onclick="addGuestDigit('9')">9</button>
+      <button class="key key-del" onclick="clearGuest()">⌫</button>
+      <button class="key" onclick="addGuestDigit('0')">0</button>
+      <button class="key" onclick="submitGuestCode()" style="background:rgba(0,255,100,0.2);">✓</button>
+    </div>
+    <div id="guestResult"></div>
+    <div class="connexion loading" id="guestConnexion">
+      <span class="dot yellow"></span> Connexion...
+    </div>
+    <div class="back-link" onclick="showScreen('choiceScreen')">← Retour</div>
+  </div>
+
+  <!-- ========== ECRAN 3 : CONTROLE ADMIN ========== -->
+  <div class="screen hidden" id="controlScreen">
+    <div class="icon" id="adminIcon">🔒</div>
+    <div class="welcome-msg" id="welcomeMsg">
+      Bienvenue <span class="name" id="welcomeName">Admin</span>
+      <span class="role" id="welcomeRole"></span>
+    </div>
 
     <div class="status waiting" id="status">Connexion en cours...</div>
 
-    <button class="btn btn-on"  id="btnOn"  onclick="send('ON')"  disabled>OUVRIR</button>
-    <button class="btn btn-off" id="btnOff" onclick="send('OFF')" disabled>FERMER</button>
+    <button class="btn btn-on" id="btnOn" onclick="send('ON')" disabled>🔓 OUVRIR</button>
+    <button class="btn btn-off" id="btnOff" onclick="send('OFF')" disabled>🔒 FERMER</button>
 
     <!-- ALARME -->
     <div class="separator"></div>
     <div class="alarm-label">Alarme sonore</div>
     <button class="btn btn-alarm" id="btnAlarme" disabled>
-      &#128276; Maintenir pour activer l'alarme
+      🔔 Maintenir pour activer l'alarme
     </button>
 
-    <!-- NOTIFICATIONS BARK -->
-    <div class="separator"></div>
-    <div class="bark-section">
-      <span class="bark-label">&#128bell; Notifications (Bark)</span>
-      <div class="bark-row">
-        <input class="bark-input" id="barkKey" type="text" placeholder="Votre cle Bark..." autocomplete="off" />
-        <button class="bark-save" onclick="saveBarkKey()">Sauver</button>
-      </div>
-      <div class="bark-status" id="barkStatus"></div>
+    <div class="connexion loading" id="adminConnexion">
+      <span class="dot yellow"></span> Connexion au serveur...
     </div>
 
-    <div class="connexion loading" id="connexion">
-      <span class="dot yellow" id="dot"></span>
-      Connexion au serveur...
+    <!-- SECTION CODES JETABLES -->
+    <div class="section-title">🎫 Codes Ephemeres <span style="font-size:0.8em;opacity:0.6;">(valables 12h)</span></div>
+    <button class="btn btn-generate" onclick="generateCode()">Generer un code ephemere</button>
+    <div class="generated-code hidden" id="generatedCode" onclick="copyCode()">
+      <span id="codeText"></span>
+      <span class="copy-hint">Appuyer pour copier</span>
+    </div>
+    <div class="code-list" id="codeList"></div>
+    <div class="back-link" onclick="clearHistory()" style="margin-top:10px;color:rgba(255,50,50,0.4);">🗑 Vider l'historique</div>
+
+    <!-- SECTION GESTION ADMINS (super admin only) -->
+    <div id="superAdminSection" class="hidden">
+      <div class="section-title gold">👑 Gestion des Admins</div>
+      <button class="btn" style="background:linear-gradient(135deg,#667eea,#764ba2);" onclick="showCreateAdminModal()">+ Creer un admin</button>
+      <div id="adminList" class="code-list"></div>
+    </div>
+
+    <div class="back-link" onclick="location.reload()">🚪 Deconnexion</div>
+  </div>
+
+  <!-- ========== MODAL CREER ADMIN ========== -->
+  <div class="modal-overlay hidden" id="createAdminModal">
+    <div class="modal">
+      <h2>👑 Nouvel Admin</h2>
+      <input class="modal-input" id="newAdminName" type="text" placeholder="Nom (ex: Thomas)" maxlength="20" autocomplete="off">
+      <input class="modal-input" id="newAdminPin" type="tel" placeholder="Code PIN (4 chiffres)" maxlength="4" autocomplete="off">
+      <select class="modal-select" id="newAdminDuration" onchange="onDurationChange()">
+        <option value="forever" selected>♾️ Tout le temps</option>
+        <option value="day">📅 1 Jour</option>
+        <option value="week">📅 1 Semaine</option>
+        <option value="month">📅 1 Mois</option>
+        <option value="custom">✏️ Autre (choisir les dates)</option>
+      </select>
+      <div class="date-row hidden" id="customDateRow">
+        <div class="date-field">
+          <div class="date-label">Du</div>
+          <input class="modal-date" id="newAdminStart" type="date">
+        </div>
+        <div class="date-field">
+          <div class="date-label">Jusqu'au</div>
+          <input class="modal-date" id="newAdminEnd" type="date">
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="hideCreateAdminModal()">Annuler</button>
+        <button class="btn-confirm" onclick="createAdmin()">Creer</button>
+      </div>
+      <div class="error-msg" id="modalError" style="text-align:center;"></div>
     </div>
   </div>
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
-    // ===== CODE PIN ADMIN (4 chiffres) =====
-    const CODE_PIN = '7423';
-    // ========================================
+    // ===== SUPER ADMIN PIN =====
+    const SUPER_ADMIN_PIN = '7423';
+    const SUPER_ADMIN_NAME = 'Super Admin';
+    // ============================
 
+    const CODE_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 heures en ms
+
+    // MQTT topics
+    const topicCmd        = 'porte-epcrd-2026/commande';
+    const topicState      = 'porte-epcrd-2026/etat';
+    const topicAddCode    = 'porte-epcrd-2026/addcode';
+    const topicUseCode    = 'porte-epcrd-2026/usecode';
+    const topicCodeResult = 'porte-epcrd-2026/coderesult';
+    const topicCodeUsed   = 'porte-epcrd-2026/codeused';
+    const topicDelCode    = 'porte-epcrd-2026/delcode';
+    const topicHistory    = 'porte-epcrd-2026/history';
+    const topicAdmins     = 'porte-epcrd-2026/admins';
+    const topicAlarme     = 'porte-epcrd-2026/alarme';
+
+    let client = null;
+    let guestClient = null;
+    let isSuperAdmin = false;
+    let currentUserName = '';
+
+    // ===== ADMIN ACCOUNTS =====
+    // { pin, name, expiresAt (timestamp ms) }
+    let adminAccounts = [];
+    try {
+      const saved = localStorage.getItem('porte_admins');
+      if (saved) adminAccounts = JSON.parse(saved);
+    } catch(e) {}
+
+    function saveAdmins() {
+      try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+      if (client && client.connected) {
+        client.publish(topicAdmins, JSON.stringify(adminAccounts), { retain: true });
+      }
+    }
+
+    // ===== CODE HISTORY =====
+    // { code, status, time, from, createdAt (timestamp ms), usedAt }
+    let codeHistory = [];
+    try {
+      const saved = localStorage.getItem('porte_codeHistory');
+      if (saved) codeHistory = JSON.parse(saved);
+    } catch(e) {}
+
+    function saveHistory() {
+      try { localStorage.setItem('porte_codeHistory', JSON.stringify(codeHistory)); } catch(e) {}
+      if (client && client.connected) {
+        client.publish(topicHistory, JSON.stringify(codeHistory), { retain: true });
+      }
+    }
+
+    function isCodeExpired(entry) {
+      if (!entry.createdAt) return false; // ancien code sans timestamp = pas d'expiry
+      return Date.now() > entry.createdAt + CODE_EXPIRY_MS;
+    }
+
+    function formatExpiry(entry) {
+      if (!entry.createdAt) return '';
+      const expiresAt = entry.createdAt + CODE_EXPIRY_MS;
+      const remaining = expiresAt - Date.now();
+      if (remaining <= 0) return 'Expire';
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      if (h > 0) return 'Expire dans ' + h + 'h' + (m > 0 ? m + 'm' : '');
+      return 'Expire dans ' + m + 'min';
+    }
+
+    function formatAdminExpiry(admin) {
+      const fmt = ts => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const now = Date.now();
+      if (admin.startsAt && admin.expiresAt) {
+        if (now < admin.startsAt) return '📅 Du ' + fmt(admin.startsAt) + ' au ' + fmt(admin.expiresAt) + ' (pas encore actif)';
+        if (now > admin.expiresAt) return '❌ Expire le ' + fmt(admin.expiresAt);
+        const days = Math.floor((admin.expiresAt - now) / 86400000);
+        return '📅 Jusqu\'au ' + fmt(admin.expiresAt) + ' (' + days + 'j restant' + (days > 1 ? 's' : '') + ')';
+      }
+      if (!admin.expiresAt) return '';
+      const remaining = admin.expiresAt - now;
+      if (remaining <= 0) return 'Acces expire';
+      const days = Math.floor(remaining / 86400000);
+      return 'Expire dans ' + days + ' jour' + (days > 1 ? 's' : '');
+    }
+
+    // ===== NAVIGATION =====
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'guestScreen' && !guestClient) connectGuestMQTT();
+    }
+
+    // ===== PIN ADMIN =====
     let pinInput = '';
     let attempts = 0;
     const maxAttempts = 5;
@@ -282,159 +631,476 @@
       updateDots();
       if (pinInput.length === 4) setTimeout(checkPin, 200);
     }
-
-    function removeDigit() {
-      pinInput = pinInput.slice(0, -1);
-      updateDots();
-      document.getElementById('errorMsg').textContent = '';
-    }
-
-    function clearPin() {
-      pinInput = '';
-      updateDots();
-      document.getElementById('errorMsg').textContent = '';
-    }
-
+    function removeDigit() { pinInput = pinInput.slice(0, -1); updateDots(); document.getElementById('errorMsg').textContent = ''; }
+    function clearPin() { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }
     function updateDots() {
       for (let i = 0; i < 4; i++) {
         document.getElementById('d' + i).className = 'pin-dot' + (i < pinInput.length ? ' filled' : '');
       }
     }
-
     function checkPin() {
-      if (pinInput === CODE_PIN) {
-        document.getElementById('lockScreen').classList.add('hidden');
-        document.getElementById('controlScreen').classList.remove('hidden');
-        connectMQTT();
-        loadBarkKey();
-      } else {
-        attempts++;
-        for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
-        if (attempts >= maxAttempts) {
-          document.getElementById('errorMsg').textContent = 'Trop de tentatives. Rechargez la page.';
-          document.querySelectorAll('.key').forEach(k => k.disabled = true);
-        } else {
-          document.getElementById('errorMsg').textContent = 'Code incorrect (' + (maxAttempts - attempts) + ' essais restants)';
-          setTimeout(() => { pinInput = ''; updateDots(); }, 600);
-        }
-      }
-    }
-
-    // ===== BARK — Notifications push =====
-    // Obtenir votre clé : installez l'app Bark (iOS) et copiez votre clé device
-
-    function loadBarkKey() {
-      const saved = localStorage.getItem('barkDeviceKey');
-      if (saved) {
-        document.getElementById('barkKey').value = saved;
-        document.getElementById('barkStatus').textContent = 'Cle active — notifications activees';
-        document.getElementById('barkStatus').className = 'bark-status ok';
-      }
-    }
-
-    function saveBarkKey() {
-      const key = document.getElementById('barkKey').value.trim();
-      if (!key) {
-        localStorage.removeItem('barkDeviceKey');
-        document.getElementById('barkStatus').textContent = 'Cle supprimee — notifications desactivees';
-        document.getElementById('barkStatus').className = 'bark-status';
+      // Check super admin
+      if (pinInput === SUPER_ADMIN_PIN) {
+        isSuperAdmin = true;
+        currentUserName = SUPER_ADMIN_NAME;
+        loginSuccess();
         return;
       }
-      localStorage.setItem('barkDeviceKey', key);
-      document.getElementById('barkStatus').textContent = 'Cle sauvegardee !';
-      document.getElementById('barkStatus').className = 'bark-status ok';
-
-      // Test immédiat pour vérifier la clé
-      sendBarkNotification('Test', 'Notifications Bark configurees avec succes !');
+      // Check created admins
+      const admin = adminAccounts.find(a => a.pin === pinInput);
+      if (admin) {
+        const now = Date.now();
+        // Verifier si l'acces n'a pas encore commence
+        if (admin.startsAt && now < admin.startsAt) {
+          for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
+          const startDate = new Date(admin.startsAt).toLocaleDateString('fr-FR');
+          document.getElementById('errorMsg').textContent = 'Acces actif a partir du ' + startDate;
+          setTimeout(() => { pinInput = ''; updateDots(); }, 1500);
+          return;
+        }
+        // Verifier si l'acces est expire
+        if (admin.expiresAt && now > admin.expiresAt) {
+          for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
+          document.getElementById('errorMsg').textContent = 'Acces expire pour "' + admin.name + '"';
+          setTimeout(() => { pinInput = ''; updateDots(); }, 1200);
+          return;
+        }
+        isSuperAdmin = false;
+        currentUserName = admin.name;
+        loginSuccess();
+        return;
+      }
+      // Wrong PIN
+      attempts++;
+      for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
+      if (attempts >= maxAttempts) {
+        document.getElementById('errorMsg').textContent = 'Trop de tentatives. Rechargez la page.';
+        document.querySelectorAll('#pinScreen .key').forEach(k => k.disabled = true);
+      } else {
+        document.getElementById('errorMsg').textContent = 'Code incorrect (' + (maxAttempts - attempts) + ' essais restants)';
+        setTimeout(() => { pinInput = ''; updateDots(); }, 600);
+      }
     }
 
-    function sendBarkNotification(title, body) {
-      const key = localStorage.getItem('barkDeviceKey');
-      if (!key) return;
-      const url = 'https://api.day.app/' + key + '/' + encodeURIComponent(title) + '/' + encodeURIComponent(body) + '?sound=bell&level=active';
-      fetch(url).catch(() => {}); // Silencieux si erreur réseau
+    function loginSuccess() {
+      showScreen('controlScreen');
+      document.getElementById('welcomeName').textContent = currentUserName;
+      document.getElementById('welcomeRole').textContent = isSuperAdmin ? '👑 Super Admin' : '🔑 Admin';
+      document.getElementById('superAdminSection').classList.toggle('hidden', !isSuperAdmin);
+      updateCodeList();
+      updateAdminList();
+      connectAdminMQTT();
     }
 
-    // ===== MQTT =====
-    const topicCmd      = 'porte-epcrd-2026/commande';
-    const topicState    = 'porte-epcrd-2026/etat';
-    const topicCodeUsed = 'porte-epcrd-2026/codeused';
-    const topicAlarme   = 'porte-epcrd-2026/alarme';
-
-    let client = null;
-    let currentState = 'OFF';
-
-    function connectMQTT() {
-      const iconEl   = document.getElementById('icon');
-      const statusEl = document.getElementById('status');
-      const connexEl = document.getElementById('connexion');
-      const btnOn    = document.getElementById('btnOn');
-      const btnOff   = document.getElementById('btnOff');
-      const btnAlarme = document.getElementById('btnAlarme');
-
+    // ===== MQTT ADMIN =====
+    function connectAdminMQTT() {
       client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-        clientId: 'web-porte-' + Math.random().toString(36).substr(2, 8),
+        clientId: 'admin-porte-' + Math.random().toString(36).substr(2, 8),
         clean: true
       });
+      const connexEl = document.getElementById('adminConnexion');
+      const btnOn = document.getElementById('btnOn');
+      const btnOff = document.getElementById('btnOff');
+      const btnAlarmeEl = document.getElementById('btnAlarme');
 
-      client.on('connect', function () {
+      client.on('connect', function() {
         connexEl.className = 'connexion ok';
         connexEl.innerHTML = '<span class="dot green"></span> Connecte au cloud';
         btnOn.disabled = false;
         btnOff.disabled = false;
-        btnAlarme.disabled = false;
+        if (btnAlarmeEl) btnAlarmeEl.disabled = false;
         client.subscribe(topicState);
         client.subscribe(topicCodeUsed);
+        client.subscribe(topicAddCode);
+        client.subscribe(topicHistory);
+        client.subscribe(topicAdmins);
       });
-
-      client.on('message', function (topic, message) {
+      client.on('message', function(topic, message) {
         const msg = message.toString();
-
-        if (topic === topicState) {
-          currentState = msg;
-          updateControlUI();
-        } else if (topic === topicCodeUsed) {
-          // Un ami vient d'ouvrir la porte avec un code jetable
-          const notifTitle = 'Porte ouverte !';
-          const notifBody  = 'Code ' + msg + ' utilise — porte deverrouilee';
-          sendBarkNotification(notifTitle, notifBody);
+        if (topic === topicState) updateAdminUI(msg);
+        else if (topic === topicHistory) {
+          try {
+            const remoteHistory = JSON.parse(msg);
+            if (Array.isArray(remoteHistory) && remoteHistory.length > 0) {
+              const merged = new Map();
+              remoteHistory.forEach(c => merged.set(c.code, c));
+              codeHistory.forEach(c => {
+                const existing = merged.get(c.code);
+                if (!existing) merged.set(c.code, c);
+                else if (c.status === 'used' && existing.status === 'waiting') merged.set(c.code, c);
+              });
+              codeHistory = Array.from(merged.values());
+              try { localStorage.setItem('porte_codeHistory', JSON.stringify(codeHistory)); } catch(e) {}
+              updateCodeList();
+            }
+          } catch(e) {}
+        }
+        else if (topic === topicAdmins) {
+          try {
+            const remoteAdmins = JSON.parse(msg);
+            if (Array.isArray(remoteAdmins)) {
+              adminAccounts = remoteAdmins;
+              try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+              updateAdminList();
+            }
+          } catch(e) {}
+        }
+        else if (topic === topicCodeUsed) markCodeUsed(msg);
+        else if (topic === topicAddCode) {
+          const exists = codeHistory.find(c => c.code === msg);
+          if (!exists) {
+            const now = new Date();
+            codeHistory.unshift({ code: msg, status: 'waiting', time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'), from: 'autre admin', createdAt: Date.now() });
+            saveHistory();
+            updateCodeList();
+            showNotif('📥 Nouveau code cree par un autre admin : ' + msg);
+          }
         }
       });
-
-      client.on('error', function () {
+      client.on('error', function() {
         connexEl.className = 'connexion ko';
         connexEl.innerHTML = '<span class="dot red"></span> Erreur de connexion';
       });
+    }
 
-      client.on('offline', function () {
-        connexEl.className = 'connexion ko';
-        connexEl.innerHTML = '<span class="dot red"></span> Deconnecte';
-        btnOn.disabled = true;
-        btnOff.disabled = true;
-        btnAlarme.disabled = true;
-      });
-
-      function updateControlUI() {
-        if (currentState === 'ON') {
-          iconEl.innerHTML = '&#128275;';
-          statusEl.className = 'status on';
-          statusEl.textContent = 'Etat : OUVERT';
-        } else {
-          iconEl.innerHTML = '&#128274;';
-          statusEl.className = 'status off';
-          statusEl.textContent = 'Etat : FERME';
-        }
+    function updateAdminUI(state) {
+      const iconEl = document.getElementById('adminIcon');
+      const statusEl = document.getElementById('status');
+      if (state === 'ON') {
+        iconEl.textContent = '🔓';
+        statusEl.className = 'status on';
+        statusEl.textContent = 'Etat : OUVERT (LED allumee)';
+      } else {
+        iconEl.textContent = '🔒';
+        statusEl.className = 'status off';
+        statusEl.textContent = 'Etat : FERME (LED eteinte)';
       }
-      updateControlUI();
     }
 
     function send(command) {
       if (client) client.publish(topicCmd, command);
     }
 
-    // ===== BOUTON ALARME (maintien = sonne, relâche = arrête) =====
-    // Fonctionne souris ET tactile (mobile)
+    // ===== GENERATION DE CODES JETABLES =====
+    function generateCode() {
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const now = new Date();
+      const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      codeHistory.unshift({ code: code, status: 'waiting', time: time, from: currentUserName, createdAt: Date.now() });
+      saveHistory();
+      if (client) client.publish(topicAddCode, code);
+      const el = document.getElementById('generatedCode');
+      document.getElementById('codeText').textContent = code;
+      el.classList.remove('hidden');
+      updateCodeList();
+    }
 
+    function copyCode() {
+      const code = document.getElementById('codeText').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const el = document.getElementById('generatedCode');
+        const old = el.querySelector('.copy-hint').textContent;
+        el.querySelector('.copy-hint').textContent = '✓ Copie !';
+        setTimeout(() => el.querySelector('.copy-hint').textContent = old, 1500);
+      });
+    }
+
+    function markCodeUsed(code) {
+      const entry = codeHistory.find(c => c.code === code);
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      if (entry) {
+        entry.status = 'used';
+        entry.usedAt = timeStr;
+      } else {
+        codeHistory.unshift({ code: code, status: 'used', time: '??:??', usedAt: timeStr, from: 'inconnu', createdAt: Date.now() });
+      }
+      saveHistory();
+      updateCodeList();
+      showNotif('🔓 Code ' + code + ' utilise ! Porte ouverte');
+    }
+
+    function clearHistory() {
+      if (confirm('Vider tout l\'historique des codes ?')) {
+        codeHistory = [];
+        saveHistory();
+        updateCodeList();
+        document.getElementById('generatedCode').classList.add('hidden');
+      }
+    }
+
+    function deleteCodeFromHistory(code) {
+      const entry = codeHistory.find(c => c.code === code);
+      if (!entry) return;
+      if (entry.status === 'waiting' && client) {
+        client.publish(topicDelCode, code);
+      }
+      codeHistory = codeHistory.filter(c => c.code !== code);
+      saveHistory();
+      updateCodeList();
+      showNotif('🗑 Code ' + code + ' supprime');
+    }
+
+    function showNotif(text) {
+      const old = document.querySelector('.notif');
+      if (old) old.remove();
+      const n = document.createElement('div');
+      n.className = 'notif';
+      n.textContent = text;
+      document.body.appendChild(n);
+      setTimeout(() => n.remove(), 4000);
+    }
+
+    function updateCodeList() {
+      const el = document.getElementById('codeList');
+      if (codeHistory.length === 0) { el.innerHTML = ''; return; }
+      const active = codeHistory.filter(c => c.status !== 'used');
+      const used = codeHistory.filter(c => c.status === 'used');
+      let html = '';
+
+      if (active.length > 0) {
+        html += '<div style="opacity:0.5;margin-bottom:8px;">Codes en attente :</div>';
+        active.forEach(c => {
+          const expired = isCodeExpired(c);
+          let badge;
+          if (expired) {
+            badge = '<span class="badge expired">❌ Expire</span>';
+          } else {
+            const expiryInfo = formatExpiry(c);
+            badge = '<span class="badge waiting">⏳ ' + (expiryInfo || 'En attente') + '</span>';
+          }
+          const from = c.from ? ' <span style="opacity:0.4;font-size:0.8em;">(' + c.from + ')</span>' : '';
+          const cls = expired ? ' expired' : '';
+          html += '<div class="code-item' + cls + '">'
+            + '<span>' + c.code + '</span>'
+            + '<div>' + badge + from
+            + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')" title="Supprimer">🗑</button>'
+            + '</div>'
+            + '</div>';
+        });
+      }
+
+      if (used.length > 0) {
+        html += '<div style="opacity:0.5;margin:14px 0 8px 0;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);">Codes utilisés :</div>';
+        used.forEach(c => {
+          const badge = '<span class="badge used">✅ Utilisé à ' + (c.usedAt || '??:??') + '</span>';
+          const from = c.from ? ' <span style="opacity:0.4;font-size:0.8em;">(' + c.from + ')</span>' : '';
+          html += '<div class="code-item used">'
+            + '<span>' + c.code + '</span>'
+            + '<div>' + badge + from
+            + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')" title="Supprimer">🗑</button>'
+            + '</div>'
+            + '</div>';
+        });
+      }
+
+      el.innerHTML = html;
+    }
+
+    // ===== GESTION ADMINS (super admin only) =====
+    function onDurationChange() {
+      const val = document.getElementById('newAdminDuration').value;
+      const customRow = document.getElementById('customDateRow');
+      if (val === 'custom') {
+        customRow.classList.remove('hidden');
+        const today = new Date();
+        const in1month = new Date();
+        in1month.setMonth(in1month.getMonth() + 1);
+        document.getElementById('newAdminStart').value = today.toISOString().split('T')[0];
+        document.getElementById('newAdminEnd').value = in1month.toISOString().split('T')[0];
+      } else {
+        customRow.classList.add('hidden');
+      }
+    }
+
+    function showCreateAdminModal() {
+      document.getElementById('createAdminModal').classList.remove('hidden');
+      document.getElementById('newAdminName').value = '';
+      document.getElementById('newAdminPin').value = '';
+      document.getElementById('newAdminDuration').value = 'forever';
+      document.getElementById('customDateRow').classList.add('hidden');
+      document.getElementById('modalError').textContent = '';
+      document.getElementById('newAdminName').focus();
+    }
+    function hideCreateAdminModal() {
+      document.getElementById('createAdminModal').classList.add('hidden');
+    }
+
+    function createAdmin() {
+      const name = document.getElementById('newAdminName').value.trim();
+      const pin = document.getElementById('newAdminPin').value.trim();
+      const duration = document.getElementById('newAdminDuration').value;
+      const errEl = document.getElementById('modalError');
+
+      if (!name) { errEl.textContent = 'Entre un nom'; return; }
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'Le PIN doit faire 4 chiffres'; return; }
+      if (pin === SUPER_ADMIN_PIN) { errEl.textContent = 'Ce PIN est reserve au Super Admin'; return; }
+      if (adminAccounts.find(a => a.pin === pin)) { errEl.textContent = 'Ce PIN est deja utilise'; return; }
+
+      let startsAt = null, expiresAt = null, label = '';
+      const now = Date.now();
+
+      if (duration === 'forever') {
+        label = 'acces permanent';
+      } else if (duration === 'day') {
+        startsAt = now;
+        expiresAt = now + 86400000;
+        label = '1 jour';
+      } else if (duration === 'week') {
+        startsAt = now;
+        expiresAt = now + 7 * 86400000;
+        label = '1 semaine';
+      } else if (duration === 'month') {
+        startsAt = now;
+        const end = new Date(); end.setMonth(end.getMonth() + 1);
+        expiresAt = end.getTime();
+        label = '1 mois';
+      } else if (duration === 'custom') {
+        const startVal = document.getElementById('newAdminStart').value;
+        const endVal = document.getElementById('newAdminEnd').value;
+        if (!startVal || !endVal) { errEl.textContent = 'Choisis les dates de debut et fin'; return; }
+        startsAt = new Date(startVal).getTime();
+        expiresAt = new Date(endVal).getTime() + 86399999;
+        if (expiresAt <= startsAt) { errEl.textContent = 'La date de fin doit etre apres le debut'; return; }
+        label = 'du ' + new Date(startsAt).toLocaleDateString('fr-FR') + ' au ' + new Date(expiresAt).toLocaleDateString('fr-FR');
+      }
+
+      adminAccounts.push({ pin, name, startsAt, expiresAt });
+      saveAdmins();
+      updateAdminList();
+      hideCreateAdminModal();
+      showNotif('✅ Admin "' + name + '" cree — ' + label);
+    }
+
+    function deleteAdmin(pin) {
+      const admin = adminAccounts.find(a => a.pin === pin);
+      if (!admin) return;
+      if (confirm('Supprimer l\'admin "' + admin.name + '" ?')) {
+        adminAccounts = adminAccounts.filter(a => a.pin !== pin);
+        saveAdmins();
+        updateAdminList();
+        showNotif('🗑 Admin "' + admin.name + '" supprime');
+      }
+    }
+
+    function updateAdminList() {
+      const el = document.getElementById('adminList');
+      if (!el) return;
+      if (adminAccounts.length === 0) {
+        el.innerHTML = '<div style="opacity:0.4;padding:10px;font-size:0.85em;">Aucun admin cree</div>';
+        return;
+      }
+      let html = '<div style="opacity:0.5;margin-bottom:8px;margin-top:10px;">Admins actifs :</div>';
+      adminAccounts.forEach(a => {
+        const now = Date.now();
+        const notStarted = a.startsAt && now < a.startsAt;
+        const expired = a.expiresAt && now > a.expiresAt;
+        const expiryText = formatAdminExpiry(a);
+        const daysLeft = a.expiresAt ? Math.floor((a.expiresAt - now) / 86400000) : 999;
+        const expiryCls = expired ? 'expired' : (notStarted ? 'soon' : (daysLeft <= 7 ? 'soon' : 'ok'));
+        html += '<div class="admin-item' + (expired ? ' expired-admin' : '') + '">'
+          + '<div class="admin-info">'
+          + '<div class="admin-name">🔑 ' + a.name + (expired ? ' <span style="color:#ff5050;font-size:0.8em;">(Expire)</span>' : '') + '</div>'
+          + '<div class="admin-pin">PIN: ' + a.pin + '</div>'
+          + (expiryText ? '<div class="admin-expiry ' + expiryCls + '">' + expiryText + '</div>' : '')
+          + '</div>'
+          + '<button class="btn-delete" onclick="deleteAdmin(\'' + a.pin + '\')" title="Supprimer">🗑</button>'
+          + '</div>';
+      });
+      el.innerHTML = html;
+    }
+
+    // ===== MQTT INVITE (code ephemere) =====
+    let guestInput = '';
+
+    function addGuestDigit(d) {
+      if (guestInput.length >= 6) return;
+      guestInput += d;
+      document.getElementById('codeDisplay').textContent = guestInput + (guestInput.length < 6 ? '_' : '');
+    }
+    function clearGuest() {
+      guestInput = '';
+      document.getElementById('codeDisplay').textContent = '_';
+      document.getElementById('guestResult').innerHTML = '';
+    }
+
+    function connectGuestMQTT() {
+      guestClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: 'guest-porte-' + Math.random().toString(36).substr(2, 8),
+        clean: true
+      });
+      const connexEl = document.getElementById('guestConnexion');
+      guestClient.on('connect', function() {
+        connexEl.className = 'connexion ok';
+        connexEl.innerHTML = '<span class="dot green"></span> Connecte';
+        guestClient.subscribe(topicCodeResult);
+        guestClient.subscribe(topicAdmins);
+      });
+      guestClient.on('message', function(topic, message) {
+        if (topic === topicCodeResult) {
+          const resultEl = document.getElementById('guestResult');
+          if (message.toString() === 'OK') {
+            resultEl.innerHTML = '<div class="result-msg success">✅ Code valide ! Porte ouverte (5s)</div>';
+            setTimeout(clearGuest, 5000);
+          } else {
+            resultEl.innerHTML = '<div class="result-msg fail">❌ Code invalide ou deja utilise</div>';
+          }
+        }
+        else if (topic === topicAdmins) {
+          try {
+            const remoteAdmins = JSON.parse(message.toString());
+            if (Array.isArray(remoteAdmins)) {
+              adminAccounts = remoteAdmins;
+              try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+            }
+          } catch(e) {}
+        }
+      });
+      guestClient.on('error', function() {
+        connexEl.className = 'connexion ko';
+        connexEl.innerHTML = '<span class="dot red"></span> Erreur';
+      });
+    }
+
+    function submitGuestCode() {
+      if (guestInput.length !== 6) return;
+
+      // Verifier si le code est expire (12h) cote client
+      const entry = codeHistory.find(c => c.code === guestInput && c.status === 'waiting');
+      if (entry && isCodeExpired(entry)) {
+        document.getElementById('guestResult').innerHTML = '<div class="result-msg fail">❌ Ce code a expire (valable 12h)</div>';
+        return;
+      }
+
+      document.getElementById('guestResult').innerHTML = '<div class="result-msg checking">⏳ Verification...</div>';
+      if (guestClient) guestClient.publish(topicUseCode, guestInput);
+    }
+
+    // ===== PRE-LOAD ADMIN LIST =====
+    (function preloadAdmins() {
+      const preClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: 'preload-' + Math.random().toString(36).substr(2, 8),
+        clean: true
+      });
+      preClient.on('connect', function() {
+        preClient.subscribe(topicAdmins);
+      });
+      preClient.on('message', function(topic, message) {
+        if (topic === topicAdmins) {
+          try {
+            const remoteAdmins = JSON.parse(message.toString());
+            if (Array.isArray(remoteAdmins)) {
+              adminAccounts = remoteAdmins;
+              try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+            }
+          } catch(e) {}
+          preClient.end();
+        }
+      });
+      setTimeout(() => { try { preClient.end(); } catch(e) {} }, 5000);
+    })();
+
+    // ===== BOUTON ALARME =====
     let alarmActive = false;
 
     function startAlarm() {
@@ -449,22 +1115,23 @@
       if (!client || !alarmActive) return;
       alarmActive = false;
       document.getElementById('btnAlarme').classList.remove('alarming');
-      document.getElementById('btnAlarme').innerHTML = '&#128276; Maintenir pour activer l\'alarme';
+      document.getElementById('btnAlarme').innerHTML = '🔔 Maintenir pour activer l\'alarme';
       client.publish(topicAlarme, 'OFF');
     }
 
-    // Souris
-    document.getElementById('btnAlarme').addEventListener('mousedown',  startAlarm);
-    document.getElementById('btnAlarme').addEventListener('mouseup',    stopAlarm);
-    document.getElementById('btnAlarme').addEventListener('mouseleave', stopAlarm);
-
-    // Tactile (mobile)
-    document.getElementById('btnAlarme').addEventListener('touchstart', function(e) {
-      e.preventDefault(); // Empêche le double-déclenchement souris/touch
-      startAlarm();
-    });
-    document.getElementById('btnAlarme').addEventListener('touchend',    stopAlarm);
-    document.getElementById('btnAlarme').addEventListener('touchcancel', stopAlarm);
+    // Gestion de l'alarme pour souris et tactile (mobile)
+    const btnAlarmeEl = document.getElementById('btnAlarme');
+    if (btnAlarmeEl) {
+      btnAlarmeEl.addEventListener('mousedown', startAlarm);
+      btnAlarmeEl.addEventListener('mouseup', stopAlarm);
+      btnAlarmeEl.addEventListener('mouseleave', stopAlarm);
+      btnAlarmeEl.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        startAlarm();
+      });
+      btnAlarmeEl.addEventListener('touchend', stopAlarm);
+      btnAlarmeEl.addEventListener('touchcancel', stopAlarm);
+    }
   </script>
 </body>
 </html>
