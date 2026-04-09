@@ -679,10 +679,10 @@
       attempts++;
       for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
       if (attempts >= maxAttempts) {
-        document.getElementById('errorMsg').textContent = 'Trop de tentatives. Veuillez réessayer plus tard.';
+        document.getElementById('errorMsg').textContent = 'Trop de tentatives. Veuillez recharger la page.';
         document.querySelectorAll('#pinScreen .key').forEach(k => k.disabled = true);
       } else {
-        document.getElementById('errorMsg').textContent = 'Code incorrect';
+        document.getElementById('errorMsg').textContent = 'Code incorrect (' + (maxAttempts - attempts) + ' essais restants)';
         setTimeout(() => { pinInput = ''; updateDots(); }, 600);
       }
     }
@@ -840,6 +840,9 @@
       codeHistory = codeHistory.filter(c => c.code !== code);
       saveHistory();
       updateCodeList();
+      if (document.getElementById('codeText').textContent === code) {
+        document.getElementById('generatedCode').classList.add('hidden');
+      }
       showNotif('Code supprimé');
     }
 
