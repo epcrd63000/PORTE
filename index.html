@@ -3,384 +3,393 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Porte Connectee</title>
+  <title>Porte Connectée</title>
   <style>
+    /* === VARIABLES & DESIGN SYSTEM AIRBNB === */
+    :root {
+      --palette-bg-primary-core: #ff385c;      /* Rausch Red */
+      --palette-bg-tertiary-core: #e00b41;     /* Deep Rausch */
+      --palette-text-primary-error: #c13515;   /* Error Red */
+      --palette-text-primary: #222222;         /* Near Black */
+      --palette-text-secondary: #6a6a6a;       /* Secondary Gray */
+      --palette-text-focused: #3f3f3f;
+      --palette-surface-light: #f7f7f7;        /* Page background */
+      --palette-surface-element: #f2f2f2;      /* Circular buttons */
+      --palette-border: #dddddd;
+      --palette-border-light: #ebebeb;
+      --shadow-card: rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 6px, rgba(0,0,0,0.1) 0px 4px 8px;
+      --shadow-hover: rgba(0,0,0,0.08) 0px 4px 12px;
+      --shadow-focus: 0 0 0 2px #222222;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: white;
+      /* Airbnb Cereal VF fallback stack */
+      font-family: 'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
+      background-color: var(--palette-surface-light);
+      color: var(--palette-text-primary);
+      font-weight: 500;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 20px;
     }
+
+    /* === CONTENEURS & CARTES === */
     .screen {
       text-align: center;
-      padding: 40px 30px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 24px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
-      max-width: 420px;
-      width: 90%;
+      padding: 48px 32px;
+      background: #ffffff;
+      border-radius: 20px; /* AirBnb Card Radius */
+      box-shadow: var(--shadow-card);
+      max-width: 440px;
+      width: 100%;
+      transition: all 0.3s ease;
     }
-    .icon { font-size: 4em; margin-bottom: 15px; transition: all 0.3s; }
-    h1 { font-size: 1.5em; margin-bottom: 5px; }
-    .subtitle { opacity: 0.5; font-size: 0.85em; margin-bottom: 25px; }
     .hidden { display: none !important; }
 
-    /* === ECRAN CHOIX === */
-    .choice-btn {
+    /* === TYPOGRAPHIE === */
+    .icon { font-size: 3em; margin-bottom: 24px; }
+    h1 { 
+      font-size: 28px; 
+      font-weight: 700; 
+      margin-bottom: 8px; 
+      letter-spacing: -0.44px; /* Intimate tracking */
+      color: var(--palette-text-primary);
+      line-height: 1.18;
+    }
+    .subtitle { 
+      color: var(--palette-text-secondary); 
+      font-size: 16px; 
+      font-weight: 400;
+      margin-bottom: 32px; 
+    }
+
+    /* === BOUTONS (Standard) === */
+    .btn, .choice-btn {
       display: block;
       width: 100%;
-      padding: 20px;
-      font-size: 1.1em;
-      font-weight: 700;
-      border: none;
-      border-radius: 14px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 8px;
       cursor: pointer;
-      color: white;
-      margin: 10px 0;
-      transition: all 0.2s;
+      margin: 12px 0;
+      transition: all 0.2s ease;
+      text-align: center;
+      text-decoration: none;
+      outline: none;
     }
-    .choice-btn:active { transform: scale(0.97); }
-    .choice-admin { background: linear-gradient(135deg, #667eea, #764ba2); }
-    .choice-admin:hover { box-shadow: 0 5px 25px rgba(102,126,234,0.4); }
-    .choice-code { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .choice-code:hover { box-shadow: 0 5px 25px rgba(245,87,108,0.4); }
+    .btn:active, .choice-btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
-    /* === CLAVIER PIN === */
+    /* Styles de boutons spécifiques */
+    .btn-primary {
+      background-color: var(--palette-bg-primary-core);
+      color: #ffffff;
+      border: none;
+    }
+    .btn-primary:hover:not(:disabled) { background-color: var(--palette-bg-tertiary-core); }
+    
+    .btn-dark {
+      background-color: var(--palette-text-primary);
+      color: #ffffff;
+      border: none;
+    }
+    .btn-dark:hover:not(:disabled) { box-shadow: var(--shadow-hover); }
+
+    .btn-outline {
+      background-color: #ffffff;
+      color: var(--palette-text-primary);
+      border: 1px solid var(--palette-text-primary);
+    }
+    .btn-outline:hover:not(:disabled) { background-color: var(--palette-surface-light); }
+
+    /* === CLAVIER PIN & CIRCULAR CONTROLS === */
     .pin-dots {
       display: flex;
       justify-content: center;
-      gap: 12px;
-      margin: 25px 0;
+      gap: 16px;
+      margin: 32px 0;
     }
     .pin-dot {
-      width: 18px; height: 18px;
+      width: 14px; height: 14px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 1px solid var(--palette-border);
       transition: all 0.2s;
     }
-    .pin-dot.filled { background: #00ff64; border-color: #00ff64; box-shadow: 0 0 10px rgba(0,255,100,0.4); }
-    .pin-dot.error { background: #ff5050; border-color: #ff5050; }
+    .pin-dot.filled { background: var(--palette-text-primary); border-color: var(--palette-text-primary); }
+    .pin-dot.error { background: var(--palette-text-primary-error); border-color: var(--palette-text-primary-error); }
+    
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 16px;
       max-width: 260px;
       margin: 0 auto;
     }
     .key {
-      padding: 16px;
-      font-size: 1.4em;
-      font-weight: 700;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%; /* AirBnb Circular controls */
+      font-size: 20px;
+      font-weight: 600;
+      font-family: inherit;
       border: none;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.1);
-      color: white;
+      background: var(--palette-surface-element);
+      color: var(--palette-text-primary);
       cursor: pointer;
-      transition: all 0.15s;
-    }
-    .key:hover { background: rgba(255,255,255,0.2); }
-    .key:active { transform: scale(0.93); }
-    .key-del { background: rgba(255,50,50,0.2); font-size: 1em; }
-    .error-msg { color: #ff5050; margin-top: 15px; font-size: 0.9em; min-height: 1.2em; }
-    .back-link { display: inline-block; margin-top: 20px; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 0.85em; }
-    .back-link:hover { color: white; }
-
-    /* === CONTROLE ADMIN === */
-    .welcome-msg {
-      font-size: 1.1em;
-      margin-bottom: 15px;
-      padding: 10px 16px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.2));
-      border: 1px solid rgba(102,126,234,0.3);
-    }
-    .welcome-msg .name { color: #667eea; font-weight: 900; }
-    .welcome-msg .role { font-size: 0.75em; opacity: 0.6; display: block; margin-top: 2px; }
-    .status {
-      font-size: 1.05em;
-      margin: 15px 0;
-      padding: 12px 20px;
-      border-radius: 12px;
-      transition: all 0.3s;
-    }
-    .status.on { background: rgba(0,255,100,0.15); color: #00ff64; }
-    .status.off { background: rgba(255,50,50,0.15); color: #ff5050; }
-    .status.waiting { background: rgba(255,200,0,0.15); color: #ffc800; }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 16px;
-      font-size: 1.15em;
-      font-weight: 700;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
       transition: all 0.2s;
-      color: white;
-      margin: 8px 0;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn-on { background: linear-gradient(135deg, #00b09b, #96c93d); }
-    .btn-on:hover { box-shadow: 0 5px 25px rgba(0,176,155,0.4); }
-    .btn-off { background: linear-gradient(135deg, #e53935, #e35d5b); }
-    .btn-off:hover { box-shadow: 0 5px 25px rgba(229,57,53,0.4); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .key:hover { background: #e4e4e4; }
+    .key:active { transform: scale(0.92); }
+    .key-del { font-size: 16px; }
 
-    /* === BOUTON ALARME === */
-    .separator { height: 1px; background: rgba(255,255,255,0.1); margin: 18px 0; }
-    .alarm-label { font-size: 0.75em; opacity: 0.5; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-    .btn-alarm { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a1a1a; user-select: none; -webkit-user-select: none; touch-action: none; }
-    .btn-alarm:hover { box-shadow: 0 5px 25px rgba(255,210,0,0.35); }
-    .btn-alarm.alarming { background: linear-gradient(135deg, #ff4e00, #ec9f05); box-shadow: 0 0 30px rgba(255,78,0,0.6); animation: alarmPulse 0.4s infinite alternate; }
-    @keyframes alarmPulse { from { transform: scale(1); } to { transform: scale(1.02); } }
+    .error-msg { color: var(--palette-text-primary-error); margin-top: 16px; font-size: 14px; font-weight: 500; min-height: 20px; }
+    .back-link { 
+      display: inline-block; 
+      margin-top: 24px; 
+      color: var(--palette-text-primary); 
+      text-decoration: underline;
+      cursor: pointer; 
+      font-size: 14px; 
+      font-weight: 600;
+    }
+
+    /* === CONTROLE ADMIN & STATUTS === */
+    .welcome-msg {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--palette-text-primary);
+      margin-bottom: 24px;
+      letter-spacing: -0.44px;
+    }
+    .welcome-msg .name { color: var(--palette-text-primary); }
+    .welcome-msg .role { font-size: 14px; font-weight: 500; color: var(--palette-text-secondary); display: block; margin-top: 4px; letter-spacing: normal; }
+    
+    .status {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 20px 0;
+      padding: 8px 16px;
+      border-radius: 14px; /* AirBnb Badges */
+      display: inline-block;
+    }
+    .status.on { background: #e8f5e9; color: #008a05; }
+    .status.off { background: var(--palette-surface-element); color: var(--palette-text-primary); }
+    .status.waiting { background: #fff8e1; color: #b26a00; }
+
+    .separator { height: 1px; background: var(--palette-border-light); margin: 24px 0; }
+    
+    .alarm-label { font-size: 13px; font-weight: 600; color: var(--palette-text-primary); margin-bottom: 12px; }
+    .btn-alarm { background: #ffffff; color: var(--palette-text-primary-error); border: 1px solid var(--palette-border); user-select: none; }
+    .btn-alarm:hover:not(:disabled) { border-color: var(--palette-text-primary-error); }
+    .btn-alarm.alarming { background: var(--palette-text-primary-error); color: #ffffff; border-color: var(--palette-text-primary-error); }
 
     .connexion {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 0.8em;
+      margin-top: 16px;
+      font-size: 13px;
+      font-weight: 500;
     }
-    .connexion.ok { background: rgba(0,255,100,0.1); color: #00ff64; }
-    .connexion.ko { background: rgba(255,50,50,0.1); color: #ff5050; }
-    .connexion.loading { background: rgba(255,200,0,0.1); color: #ffc800; }
+    .connexion.ok { color: #008a05; }
+    .connexion.ko { color: var(--palette-text-primary-error); }
+    .connexion.loading { color: var(--palette-text-secondary); }
     .dot {
       display: inline-block; width: 8px; height: 8px;
       border-radius: 50%; margin-right: 6px; vertical-align: middle;
     }
-    .dot.green { background: #00ff64; }
-    .dot.red { background: #ff5050; }
-    .dot.yellow { background: #ffc800; animation: pulse 1s infinite; }
+    .dot.green { background: #008a05; }
+    .dot.red { background: var(--palette-text-primary-error); }
+    .dot.yellow { background: #b26a00; animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
     /* === SECTION CODES JETABLES === */
     .section-title {
-      font-size: 0.95em;
-      font-weight: 700;
-      margin: 25px 0 10px 0;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      color: #f093fb;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 32px 0 16px 0;
+      letter-spacing: -0.18px;
+      color: var(--palette-text-primary);
+      text-align: left;
     }
-    .section-title.gold { color: #ffc800; }
-    .btn-generate {
-      background: linear-gradient(135deg, #f093fb, #f5576c);
-      padding: 14px;
-      font-size: 1em;
-    }
-    .btn-generate:hover { box-shadow: 0 5px 25px rgba(245,87,108,0.4); }
     .generated-code {
-      margin: 15px 0;
-      padding: 18px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 14px;
-      font-size: 2em;
-      font-weight: 900;
+      margin: 20px 0;
+      padding: 24px;
+      background: var(--palette-surface-light);
+      border-radius: 16px;
+      font-size: 32px;
+      font-weight: 700;
       letter-spacing: 8px;
-      color: #f093fb;
+      color: var(--palette-text-primary);
       cursor: pointer;
+      border: 1px solid var(--palette-border-light);
       transition: all 0.2s;
-      position: relative;
     }
-    .generated-code:hover { background: rgba(255,255,255,0.12); }
+    .generated-code:hover { border-color: var(--palette-text-primary); }
     .generated-code .copy-hint {
       display: block;
-      font-size: 0.35em;
-      letter-spacing: 1px;
-      opacity: 0.5;
-      margin-top: 5px;
+      font-size: 13px;
+      letter-spacing: normal;
+      color: var(--palette-text-secondary);
+      font-weight: 500;
+      margin-top: 8px;
     }
-    .code-list {
-      text-align: left;
-      margin-top: 10px;
-      font-size: 0.8em;
-    }
+    
+    .code-list { text-align: left; margin-top: 16px; }
+    .code-list-title { color: var(--palette-text-primary); font-size: 14px; font-weight: 600; margin: 24px 0 12px 0; padding-top: 16px; border-top: 1px solid var(--palette-border-light); }
+    
     .code-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
-      margin: 4px 0;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--palette-border-light);
     }
-    .code-item span { font-family: monospace; letter-spacing: 3px; font-weight: 700; }
-    .code-item .badge { font-size: 0.85em; }
-    .code-item .badge.waiting { color: #ffc800; }
-    .code-item .badge.used { color: #00ff64; }
-    .code-item .badge.expired { color: #ff5050; }
-    .code-item.used { opacity: 0.5; }
+    .code-item:last-child { border-bottom: none; }
+    .code-item span:first-child { font-family: monospace; letter-spacing: 2px; font-weight: 600; font-size: 16px; }
+    
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: 14px; font-weight: 600; }
+    .badge.waiting { background: var(--palette-surface-element); color: var(--palette-text-primary); }
+    .badge.used { background: #e8f5e9; color: #008a05; }
+    .badge.expired { background: #fce8e6; color: var(--palette-text-primary-error); }
+    
+    .code-item.used { opacity: 0.6; }
     .code-item.used span:first-child { text-decoration: line-through; }
-    .code-item.expired { opacity: 0.4; }
-    .code-item.expired span:first-child { text-decoration: line-through; color: #ff5050; }
+    .code-item.expired { opacity: 0.5; }
+    .code-item.expired span:first-child { text-decoration: line-through; color: var(--palette-text-secondary); }
+    
     .btn-delete {
-      background: rgba(255,50,50,0.2);
+      background: transparent;
       border: none;
-      color: #ff5050;
-      font-size: 0.9em;
+      color: var(--palette-text-secondary);
+      font-size: 14px;
       cursor: pointer;
       padding: 4px 8px;
-      border-radius: 6px;
       margin-left: 8px;
-      transition: all 0.15s;
+      text-decoration: underline;
     }
-    .btn-delete:hover { background: rgba(255,50,50,0.4); }
+    .btn-delete:hover { color: var(--palette-text-primary-error); }
+
     .notif {
       position: fixed;
-      top: 20px;
+      bottom: 32px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.95em;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
       z-index: 999;
-      animation: slideDown 0.3s ease-out;
-      background: rgba(0,255,100,0.2);
-      color: #00ff64;
-      border: 1px solid rgba(0,255,100,0.3);
+      animation: slideUp 0.3s ease-out;
+      background: var(--palette-text-primary);
+      color: #ffffff;
+      box-shadow: var(--shadow-hover);
     }
-    @keyframes slideDown { from { transform: translateX(-50%) translateY(-30px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+    @keyframes slideUp { from { transform: translateX(-50%) translateY(30px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
 
     /* === ECRAN CODE INVITE === */
     .code-input-display {
-      font-size: 2.5em;
-      font-weight: 900;
-      letter-spacing: 10px;
-      margin: 20px 0;
-      min-height: 1.3em;
-      color: #f093fb;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 12px;
+      margin: 24px 0;
+      min-height: 48px;
+      color: var(--palette-text-primary);
     }
     .result-msg {
-      margin: 15px 0;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 1.1em;
-      font-weight: 700;
+      margin: 16px 0;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
     }
-    .result-msg.success { background: rgba(0,255,100,0.15); color: #00ff64; }
-    .result-msg.fail { background: rgba(255,50,50,0.15); color: #ff5050; }
-    .result-msg.checking { background: rgba(255,200,0,0.15); color: #ffc800; }
+    .result-msg.success { background: #e8f5e9; color: #008a05; }
+    .result-msg.fail { background: #fce8e6; color: var(--palette-text-primary-error); }
+    .result-msg.checking { background: #fff8e1; color: #b26a00; }
 
     /* === POPUP MODAL === */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.4); /* Softer Airbnb overlay */
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
       animation: fadeIn 0.2s;
+      padding: 20px;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .modal {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      background: #ffffff;
       border-radius: 20px;
-      padding: 30px;
-      width: 90%;
-      max-width: 360px;
-      box-shadow: 0 10px 50px rgba(0,0,0,0.6);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .modal h2 { font-size: 1.2em; margin-bottom: 20px; }
-    .modal-input {
+      padding: 32px;
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 2px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.08);
-      color: white;
-      font-size: 1em;
-      margin-bottom: 12px;
-      outline: none;
-      transition: border-color 0.2s;
+      max-width: 400px;
+      box-shadow: var(--shadow-card);
     }
-    .modal-input:focus { border-color: #667eea; }
-    .modal-input::placeholder { color: rgba(255,255,255,0.3); }
+    .modal h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; text-align: left; }
+    
+    .modal-input, .modal-select, .modal-date {
+      width: 100%;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--palette-border);
+      background: #ffffff;
+      color: var(--palette-text-primary);
+      font-size: 16px;
+      font-family: inherit;
+      margin-bottom: 16px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .modal-input:focus, .modal-select:focus, .modal-date:focus { 
+      border-color: var(--palette-text-primary);
+      box-shadow: var(--shadow-focus);
+    }
+    .modal-input::placeholder { color: var(--palette-text-secondary); }
+    
     .modal-select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 2px solid rgba(255,255,255,0.15);
-      background: rgba(30,30,60,0.95);
-      color: white;
-      font-size: 1em;
-      margin-bottom: 12px;
-      outline: none;
       cursor: pointer;
-      transition: border-color 0.2s;
       appearance: none;
       -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(255,255,255,0.5)' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23222222' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
+      background-position: right 16px center;
+      padding-right: 40px;
     }
-    .modal-select:focus { border-color: #667eea; }
-    .modal-select option { background: #1a1a2e; color: white; }
-    .date-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    
+    .date-row { display: flex; gap: 16px; margin-bottom: 16px; }
     .date-field { flex: 1; }
-    .date-label {
-      font-size: 0.75em;
-      opacity: 0.6;
-      margin-bottom: 5px;
-      text-align: left;
-    }
-    .modal-date {
-      width: 100%;
-      padding: 12px 10px;
-      border-radius: 12px;
-      border: 2px solid rgba(255,255,255,0.15);
-      background: rgba(30,30,60,0.95);
-      color: white;
-      font-size: 0.9em;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s;
-      color-scheme: dark;
-    }
-    .modal-date:focus { border-color: #667eea; }
-    .modal-btns { display: flex; gap: 10px; margin-top: 8px; }
-    .modal-btns button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 1em;
-      cursor: pointer;
-      color: white;
-    }
-    .modal-btns .btn-cancel { background: rgba(255,255,255,0.1); }
-    .modal-btns .btn-confirm { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .date-label { font-size: 12px; font-weight: 600; color: var(--palette-text-secondary); margin-bottom: 8px; text-align: left; display: block; }
+    
+    .modal-btns { display: flex; gap: 16px; margin-top: 24px; }
+    .modal-btns button { flex: 1; margin: 0; }
 
     /* === ADMIN LIST === */
     .admin-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 14px;
-      margin: 5px 0;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--palette-border-light);
       text-align: left;
     }
-    .admin-item.expired-admin { opacity: 0.4; border: 1px solid rgba(255,50,50,0.3); }
+    .admin-item.expired-admin { opacity: 0.5; }
     .admin-item .admin-info { flex: 1; }
-    .admin-item .admin-name { font-weight: 700; font-size: 0.95em; }
-    .admin-item .admin-pin { font-family: monospace; opacity: 0.5; font-size: 0.8em; letter-spacing: 2px; }
-    .admin-item .admin-expiry { font-size: 0.75em; margin-top: 3px; }
-    .admin-item .admin-expiry.ok { color: #00ff64; }
-    .admin-item .admin-expiry.soon { color: #ffc800; }
-    .admin-item .admin-expiry.expired { color: #ff5050; }
+    .admin-item .admin-name { font-weight: 600; font-size: 16px; color: var(--palette-text-primary); }
+    .admin-item .admin-pin { font-family: monospace; color: var(--palette-text-secondary); font-size: 14px; margin-top: 4px; }
+    .admin-item .admin-expiry { font-size: 12px; margin-top: 4px; font-weight: 500; }
+    .admin-item .admin-expiry.ok { color: #008a05; }
+    .admin-item .admin-expiry.soon { color: #b26a00; }
+    .admin-item .admin-expiry.expired { color: var(--palette-text-primary-error); }
   </style>
 </head>
 <body>
@@ -388,17 +397,17 @@
   <!-- ========== ECRAN 1 : CHOIX ========== -->
   <div class="screen" id="choiceScreen">
     <div class="icon">🚪</div>
-    <h1>Porte Connectee</h1>
-    <div class="subtitle">Controle a distance mondial</div>
-    <button class="choice-btn choice-admin" onclick="showScreen('pinScreen')">🔑 Admin (code PIN)</button>
-    <button class="choice-btn choice-code" onclick="showScreen('guestScreen')">🎫 J'ai un code ephemere</button>
+    <h1>Porte Connectée</h1>
+    <div class="subtitle">Contrôle à distance sécurisé</div>
+    <button class="choice-btn btn-dark" onclick="showScreen('pinScreen')">Connexion Hôte</button>
+    <button class="choice-btn btn-outline" onclick="showScreen('guestScreen')">J'ai un code d'invité</button>
   </div>
 
   <!-- ========== ECRAN 2a : PIN ADMIN ========== -->
   <div class="screen hidden" id="pinScreen">
     <div class="icon">🔒</div>
-    <h1>Acces Admin</h1>
-    <div class="subtitle">Entrez le code PIN</div>
+    <h1>Accès Hôte</h1>
+    <div class="subtitle">Entrez votre code PIN</div>
     <div class="pin-dots" id="pinDots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
@@ -415,19 +424,19 @@
       <button class="key" onclick="addDigit('7')">7</button>
       <button class="key" onclick="addDigit('8')">8</button>
       <button class="key" onclick="addDigit('9')">9</button>
-      <button class="key key-del" onclick="clearPin()">⌫</button>
+      <button class="key key-del" onclick="clearPin()">Effacer</button>
       <button class="key" onclick="addDigit('0')">0</button>
       <button class="key key-del" onclick="removeDigit()">←</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
-    <div class="back-link" onclick="showScreen('choiceScreen')">← Retour</div>
+    <div class="back-link" onclick="showScreen('choiceScreen')">Retour</div>
   </div>
 
   <!-- ========== ECRAN 2b : CODE INVITE ========== -->
   <div class="screen hidden" id="guestScreen">
     <div class="icon">🎫</div>
-    <h1>Code Ephemere</h1>
-    <div class="subtitle">Entrez le code recu</div>
+    <h1>Code Invité</h1>
+    <div class="subtitle">Entrez le code à 6 chiffres</div>
     <div class="code-input-display" id="codeDisplay">_</div>
     <div class="keypad">
       <button class="key" onclick="addGuestDigit('1')">1</button>
@@ -439,97 +448,100 @@
       <button class="key" onclick="addGuestDigit('7')">7</button>
       <button class="key" onclick="addGuestDigit('8')">8</button>
       <button class="key" onclick="addGuestDigit('9')">9</button>
-      <button class="key key-del" onclick="clearGuest()">⌫</button>
+      <button class="key key-del" onclick="clearGuest()">Effacer</button>
       <button class="key" onclick="addGuestDigit('0')">0</button>
-      <button class="key" onclick="submitGuestCode()" style="background:rgba(0,255,100,0.2);">✓</button>
+      <button class="key" onclick="submitGuestCode()" style="background:var(--palette-text-primary);color:white;">✓</button>
     </div>
     <div id="guestResult"></div>
     <div class="connexion loading" id="guestConnexion">
       <span class="dot yellow"></span> Connexion...
     </div>
-    <div class="back-link" onclick="showScreen('choiceScreen')">← Retour</div>
+    <div class="back-link" onclick="showScreen('choiceScreen')">Retour</div>
   </div>
 
   <!-- ========== ECRAN 3 : CONTROLE ADMIN ========== -->
   <div class="screen hidden" id="controlScreen">
-    <div class="icon" id="adminIcon">🔒</div>
     <div class="welcome-msg" id="welcomeMsg">
-      Bienvenue <span class="name" id="welcomeName">Admin</span>
+      Bonjour, <span class="name" id="welcomeName">Hôte</span>
       <span class="role" id="welcomeRole"></span>
     </div>
 
-    <div class="status waiting" id="status">Connexion en cours...</div>
+    <div class="status waiting" id="status">Vérification de la porte...</div>
 
-    <button class="btn btn-on" id="btnOn" onclick="send('ON')" disabled>🔓 OUVRIR</button>
-    <button class="btn btn-off" id="btnOff" onclick="send('OFF')" disabled>🔒 FERMER</button>
+    <button class="btn btn-dark" id="btnOn" onclick="send('ON')" disabled>Déverrouiller</button>
+    <button class="btn btn-outline" id="btnOff" onclick="send('OFF')" disabled>Verrouiller</button>
 
     <!-- ALARME -->
     <div class="separator"></div>
-    <div class="alarm-label">Alarme sonore</div>
+    <div class="alarm-label">Urgence</div>
     <button class="btn btn-alarm" id="btnAlarme" disabled>
-      🔔 Maintenir pour activer l'alarme
+      Maintenir pour l'alarme
     </button>
 
     <div class="connexion loading" id="adminConnexion">
-      <span class="dot yellow"></span> Connexion au serveur...
+      <span class="dot yellow"></span> Synchronisation...
     </div>
 
     <!-- SECTION CODES JETABLES -->
-    <div class="section-title">🎫 Codes Ephemeres <span style="font-size:0.8em;opacity:0.6;">(valables 12h)</span></div>
-    <button class="btn btn-generate" onclick="generateCode()">Generer un code ephemere</button>
+    <div class="section-title">Codes invités</div>
+    <button class="btn btn-primary" onclick="generateCode()">Générer un code (12h)</button>
+    
     <div class="generated-code hidden" id="generatedCode" onclick="copyCode()">
       <span id="codeText"></span>
       <span class="copy-hint">Appuyer pour copier</span>
     </div>
+    
     <div class="code-list" id="codeList"></div>
-    <div class="back-link" onclick="clearHistory()" style="margin-top:10px;color:rgba(255,50,50,0.4);">🗑 Vider l'historique</div>
+    <div class="back-link" onclick="clearHistory()" style="color:var(--palette-text-primary-error); font-weight: 500;">Vider l'historique</div>
 
     <!-- SECTION GESTION ADMINS (super admin only) -->
     <div id="superAdminSection" class="hidden">
-      <div class="section-title gold">👑 Gestion des Admins</div>
-      <button class="btn" style="background:linear-gradient(135deg,#667eea,#764ba2);" onclick="showCreateAdminModal()">+ Creer un admin</button>
+      <div class="section-title">Gestion des hôtes</div>
+      <button class="btn btn-outline" onclick="showCreateAdminModal()">Ajouter un hôte</button>
       <div id="adminList" class="code-list"></div>
     </div>
 
-    <div class="back-link" onclick="location.reload()">🚪 Deconnexion</div>
+    <div class="separator" style="margin-top: 32px;"></div>
+    <div class="back-link" style="margin-top:0;" onclick="location.reload()">Se déconnecter</div>
   </div>
 
   <!-- ========== MODAL CREER ADMIN ========== -->
   <div class="modal-overlay hidden" id="createAdminModal">
     <div class="modal">
-      <h2>👑 Nouvel Admin</h2>
-      <input class="modal-input" id="newAdminName" type="text" placeholder="Nom (ex: Thomas)" maxlength="20" autocomplete="off">
+      <h2>Nouvel Hôte</h2>
+      <input class="modal-input" id="newAdminName" type="text" placeholder="Nom complet (ex: Thomas)" maxlength="20" autocomplete="off">
       <input class="modal-input" id="newAdminPin" type="tel" placeholder="Code PIN (4 chiffres)" maxlength="4" autocomplete="off">
       <select class="modal-select" id="newAdminDuration" onchange="onDurationChange()">
-        <option value="forever" selected>♾️ Tout le temps</option>
-        <option value="day">📅 1 Jour</option>
-        <option value="week">📅 1 Semaine</option>
-        <option value="month">📅 1 Mois</option>
-        <option value="custom">✏️ Autre (choisir les dates)</option>
+        <option value="forever" selected>Accès permanent</option>
+        <option value="day">Accès de 24 heures</option>
+        <option value="week">Accès de 7 jours</option>
+        <option value="month">Accès de 1 mois</option>
+        <option value="custom">Dates personnalisées</option>
       </select>
       <div class="date-row hidden" id="customDateRow">
         <div class="date-field">
-          <div class="date-label">Du</div>
+          <label class="date-label">Arrivée</label>
           <input class="modal-date" id="newAdminStart" type="date">
         </div>
         <div class="date-field">
-          <div class="date-label">Jusqu'au</div>
+          <label class="date-label">Départ</label>
           <input class="modal-date" id="newAdminEnd" type="date">
         </div>
       </div>
+      <div class="error-msg" id="modalError" style="text-align:left; margin-top: 0; margin-bottom: 16px;"></div>
       <div class="modal-btns">
-        <button class="btn-cancel" onclick="hideCreateAdminModal()">Annuler</button>
-        <button class="btn-confirm" onclick="createAdmin()">Creer</button>
+        <button class="btn btn-outline" onclick="hideCreateAdminModal()">Annuler</button>
+        <button class="btn btn-dark" onclick="createAdmin()">Ajouter</button>
       </div>
-      <div class="error-msg" id="modalError" style="text-align:center;"></div>
     </div>
   </div>
 
+  <!-- Intégration de la librairie MQTT -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
     // ===== SUPER ADMIN PIN =====
     const SUPER_ADMIN_PIN = '7423';
-    const SUPER_ADMIN_NAME = 'Super Admin';
+    const SUPER_ADMIN_NAME = 'Admin Principal';
     // ============================
 
     const CODE_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 heures en ms
@@ -552,7 +564,6 @@
     let currentUserName = '';
 
     // ===== ADMIN ACCOUNTS =====
-    // { pin, name, expiresAt (timestamp ms) }
     let adminAccounts = [];
     try {
       const saved = localStorage.getItem('porte_admins');
@@ -567,7 +578,6 @@
     }
 
     // ===== CODE HISTORY =====
-    // { code, status, time, from, createdAt (timestamp ms), usedAt }
     let codeHistory = [];
     try {
       const saved = localStorage.getItem('porte_codeHistory');
@@ -582,7 +592,7 @@
     }
 
     function isCodeExpired(entry) {
-      if (!entry.createdAt) return false; // ancien code sans timestamp = pas d'expiry
+      if (!entry.createdAt) return false; 
       return Date.now() > entry.createdAt + CODE_EXPIRY_MS;
     }
 
@@ -590,7 +600,7 @@
       if (!entry.createdAt) return '';
       const expiresAt = entry.createdAt + CODE_EXPIRY_MS;
       const remaining = expiresAt - Date.now();
-      if (remaining <= 0) return 'Expire';
+      if (remaining <= 0) return 'Expiré';
       const h = Math.floor(remaining / 3600000);
       const m = Math.floor((remaining % 3600000) / 60000);
       if (h > 0) return 'Expire dans ' + h + 'h' + (m > 0 ? m + 'm' : '');
@@ -601,14 +611,14 @@
       const fmt = ts => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
       const now = Date.now();
       if (admin.startsAt && admin.expiresAt) {
-        if (now < admin.startsAt) return '📅 Du ' + fmt(admin.startsAt) + ' au ' + fmt(admin.expiresAt) + ' (pas encore actif)';
-        if (now > admin.expiresAt) return '❌ Expire le ' + fmt(admin.expiresAt);
+        if (now < admin.startsAt) return 'Du ' + fmt(admin.startsAt) + ' au ' + fmt(admin.expiresAt) + ' (En attente)';
+        if (now > admin.expiresAt) return 'Expiré le ' + fmt(admin.expiresAt);
         const days = Math.floor((admin.expiresAt - now) / 86400000);
-        return '📅 Jusqu\'au ' + fmt(admin.expiresAt) + ' (' + days + 'j restant' + (days > 1 ? 's' : '') + ')';
+        return 'Jusqu\'au ' + fmt(admin.expiresAt) + ' (' + days + 'j restant' + (days > 1 ? 's' : '') + ')';
       }
       if (!admin.expiresAt) return '';
       const remaining = admin.expiresAt - now;
-      if (remaining <= 0) return 'Acces expire';
+      if (remaining <= 0) return 'Accès expiré';
       const days = Math.floor(remaining / 86400000);
       return 'Expire dans ' + days + ' jour' + (days > 1 ? 's' : '');
     }
@@ -639,29 +649,25 @@
       }
     }
     function checkPin() {
-      // Check super admin
       if (pinInput === SUPER_ADMIN_PIN) {
         isSuperAdmin = true;
         currentUserName = SUPER_ADMIN_NAME;
         loginSuccess();
         return;
       }
-      // Check created admins
       const admin = adminAccounts.find(a => a.pin === pinInput);
       if (admin) {
         const now = Date.now();
-        // Verifier si l'acces n'a pas encore commence
         if (admin.startsAt && now < admin.startsAt) {
           for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
           const startDate = new Date(admin.startsAt).toLocaleDateString('fr-FR');
-          document.getElementById('errorMsg').textContent = 'Acces actif a partir du ' + startDate;
+          document.getElementById('errorMsg').textContent = 'Accès actif à partir du ' + startDate;
           setTimeout(() => { pinInput = ''; updateDots(); }, 1500);
           return;
         }
-        // Verifier si l'acces est expire
         if (admin.expiresAt && now > admin.expiresAt) {
           for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
-          document.getElementById('errorMsg').textContent = 'Acces expire pour "' + admin.name + '"';
+          document.getElementById('errorMsg').textContent = 'Accès expiré pour ' + admin.name;
           setTimeout(() => { pinInput = ''; updateDots(); }, 1200);
           return;
         }
@@ -670,14 +676,13 @@
         loginSuccess();
         return;
       }
-      // Wrong PIN
       attempts++;
       for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
       if (attempts >= maxAttempts) {
-        document.getElementById('errorMsg').textContent = 'Trop de tentatives. Rechargez la page.';
+        document.getElementById('errorMsg').textContent = 'Trop de tentatives. Veuillez réessayer plus tard.';
         document.querySelectorAll('#pinScreen .key').forEach(k => k.disabled = true);
       } else {
-        document.getElementById('errorMsg').textContent = 'Code incorrect (' + (maxAttempts - attempts) + ' essais restants)';
+        document.getElementById('errorMsg').textContent = 'Code incorrect';
         setTimeout(() => { pinInput = ''; updateDots(); }, 600);
       }
     }
@@ -685,7 +690,7 @@
     function loginSuccess() {
       showScreen('controlScreen');
       document.getElementById('welcomeName').textContent = currentUserName;
-      document.getElementById('welcomeRole').textContent = isSuperAdmin ? '👑 Super Admin' : '🔑 Admin';
+      document.getElementById('welcomeRole').textContent = isSuperAdmin ? 'Admin Principal' : 'Hôte';
       document.getElementById('superAdminSection').classList.toggle('hidden', !isSuperAdmin);
       updateCodeList();
       updateAdminList();
@@ -705,7 +710,7 @@
 
       client.on('connect', function() {
         connexEl.className = 'connexion ok';
-        connexEl.innerHTML = '<span class="dot green"></span> Connecte au cloud';
+        connexEl.innerHTML = '<span class="dot green"></span> Synchronisé';
         btnOn.disabled = false;
         btnOff.disabled = false;
         if (btnAlarmeEl) btnAlarmeEl.disabled = false;
@@ -750,30 +755,27 @@
           const exists = codeHistory.find(c => c.code === msg);
           if (!exists) {
             const now = new Date();
-            codeHistory.unshift({ code: msg, status: 'waiting', time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'), from: 'autre admin', createdAt: Date.now() });
+            codeHistory.unshift({ code: msg, status: 'waiting', time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'), from: 'autre hôte', createdAt: Date.now() });
             saveHistory();
             updateCodeList();
-            showNotif('📥 Nouveau code cree par un autre admin : ' + msg);
+            showNotif('Nouveau code invité créé par un autre hôte : ' + msg);
           }
         }
       });
       client.on('error', function() {
         connexEl.className = 'connexion ko';
-        connexEl.innerHTML = '<span class="dot red"></span> Erreur de connexion';
+        connexEl.innerHTML = '<span class="dot red"></span> Hors ligne';
       });
     }
 
     function updateAdminUI(state) {
-      const iconEl = document.getElementById('adminIcon');
       const statusEl = document.getElementById('status');
       if (state === 'ON') {
-        iconEl.textContent = '🔓';
         statusEl.className = 'status on';
-        statusEl.textContent = 'Etat : OUVERT (LED allumee)';
+        statusEl.textContent = 'Porte déverrouillée';
       } else {
-        iconEl.textContent = '🔒';
         statusEl.className = 'status off';
-        statusEl.textContent = 'Etat : FERME (LED eteinte)';
+        statusEl.textContent = 'Porte verrouillée';
       }
     }
 
@@ -800,8 +802,8 @@
       navigator.clipboard.writeText(code).then(() => {
         const el = document.getElementById('generatedCode');
         const old = el.querySelector('.copy-hint').textContent;
-        el.querySelector('.copy-hint').textContent = '✓ Copie !';
-        setTimeout(() => el.querySelector('.copy-hint').textContent = old, 1500);
+        el.querySelector('.copy-hint').textContent = 'Copié dans le presse-papier';
+        setTimeout(() => el.querySelector('.copy-hint').textContent = old, 2000);
       });
     }
 
@@ -817,11 +819,11 @@
       }
       saveHistory();
       updateCodeList();
-      showNotif('🔓 Code ' + code + ' utilise ! Porte ouverte');
+      showNotif('Le code ' + code + ' a été utilisé. Porte ouverte.');
     }
 
     function clearHistory() {
-      if (confirm('Vider tout l\'historique des codes ?')) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer l\'historique des codes ?')) {
         codeHistory = [];
         saveHistory();
         updateCodeList();
@@ -838,7 +840,7 @@
       codeHistory = codeHistory.filter(c => c.code !== code);
       saveHistory();
       updateCodeList();
-      showNotif('🗑 Code ' + code + ' supprime');
+      showNotif('Code supprimé');
     }
 
     function showNotif(text) {
@@ -859,36 +861,36 @@
       let html = '';
 
       if (active.length > 0) {
-        html += '<div style="opacity:0.5;margin-bottom:8px;">Codes en attente :</div>';
+        html += '<div class="code-list-title" style="border-top:none; padding-top:0;">En attente</div>';
         active.forEach(c => {
           const expired = isCodeExpired(c);
           let badge;
           if (expired) {
-            badge = '<span class="badge expired">❌ Expire</span>';
+            badge = '<span class="badge expired">Expiré</span>';
           } else {
             const expiryInfo = formatExpiry(c);
-            badge = '<span class="badge waiting">⏳ ' + (expiryInfo || 'En attente') + '</span>';
+            badge = '<span class="badge waiting">' + (expiryInfo || 'Actif') + '</span>';
           }
-          const from = c.from ? ' <span style="opacity:0.4;font-size:0.8em;">(' + c.from + ')</span>' : '';
+          const from = c.from ? ' <span style="color:var(--palette-text-secondary);font-size:12px;font-weight:400;display:block;">Créé par ' + c.from + '</span>' : '';
           const cls = expired ? ' expired' : '';
           html += '<div class="code-item' + cls + '">'
-            + '<span>' + c.code + '</span>'
-            + '<div>' + badge + from
-            + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')" title="Supprimer">🗑</button>'
+            + '<div><span>' + c.code + '</span>' + from + '</div>'
+            + '<div style="display:flex;align-items:center;">' + badge
+            + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')">Supprimer</button>'
             + '</div>'
             + '</div>';
         });
       }
 
       if (used.length > 0) {
-        html += '<div style="opacity:0.5;margin:14px 0 8px 0;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);">Codes utilisés :</div>';
+        html += '<div class="code-list-title">Historique d\'utilisation</div>';
         used.forEach(c => {
-          const badge = '<span class="badge used">✅ Utilisé à ' + (c.usedAt || '??:??') + '</span>';
-          const from = c.from ? ' <span style="opacity:0.4;font-size:0.8em;">(' + c.from + ')</span>' : '';
+          const badge = '<span class="badge used">Utilisé à ' + (c.usedAt || '??:??') + '</span>';
+          const from = c.from ? ' <span style="color:var(--palette-text-secondary);font-size:12px;font-weight:400;display:block;">Créé par ' + c.from + '</span>' : '';
           html += '<div class="code-item used">'
-            + '<span>' + c.code + '</span>'
-            + '<div>' + badge + from
-            + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')" title="Supprimer">🗑</button>'
+            + '<div><span>' + c.code + '</span>' + from + '</div>'
+            + '<div style="display:flex;align-items:center;">' + badge
+            + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')">Supprimer</button>'
             + '</div>'
             + '</div>';
         });
@@ -932,24 +934,24 @@
       const duration = document.getElementById('newAdminDuration').value;
       const errEl = document.getElementById('modalError');
 
-      if (!name) { errEl.textContent = 'Entre un nom'; return; }
-      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'Le PIN doit faire 4 chiffres'; return; }
-      if (pin === SUPER_ADMIN_PIN) { errEl.textContent = 'Ce PIN est reserve au Super Admin'; return; }
-      if (adminAccounts.find(a => a.pin === pin)) { errEl.textContent = 'Ce PIN est deja utilise'; return; }
+      if (!name) { errEl.textContent = 'Veuillez saisir un nom'; return; }
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'Le code PIN doit comporter 4 chiffres'; return; }
+      if (pin === SUPER_ADMIN_PIN) { errEl.textContent = 'Ce code PIN est réservé'; return; }
+      if (adminAccounts.find(a => a.pin === pin)) { errEl.textContent = 'Ce code PIN est déjà utilisé'; return; }
 
       let startsAt = null, expiresAt = null, label = '';
       const now = Date.now();
 
       if (duration === 'forever') {
-        label = 'acces permanent';
+        label = 'accès permanent';
       } else if (duration === 'day') {
         startsAt = now;
         expiresAt = now + 86400000;
-        label = '1 jour';
+        label = '24 heures';
       } else if (duration === 'week') {
         startsAt = now;
         expiresAt = now + 7 * 86400000;
-        label = '1 semaine';
+        label = '7 jours';
       } else if (duration === 'month') {
         startsAt = now;
         const end = new Date(); end.setMonth(end.getMonth() + 1);
@@ -958,10 +960,10 @@
       } else if (duration === 'custom') {
         const startVal = document.getElementById('newAdminStart').value;
         const endVal = document.getElementById('newAdminEnd').value;
-        if (!startVal || !endVal) { errEl.textContent = 'Choisis les dates de debut et fin'; return; }
+        if (!startVal || !endVal) { errEl.textContent = 'Sélectionnez les dates'; return; }
         startsAt = new Date(startVal).getTime();
         expiresAt = new Date(endVal).getTime() + 86399999;
-        if (expiresAt <= startsAt) { errEl.textContent = 'La date de fin doit etre apres le debut'; return; }
+        if (expiresAt <= startsAt) { errEl.textContent = 'La date de fin doit être ultérieure au début'; return; }
         label = 'du ' + new Date(startsAt).toLocaleDateString('fr-FR') + ' au ' + new Date(expiresAt).toLocaleDateString('fr-FR');
       }
 
@@ -969,17 +971,17 @@
       saveAdmins();
       updateAdminList();
       hideCreateAdminModal();
-      showNotif('✅ Admin "' + name + '" cree — ' + label);
+      showNotif('Hôte ajouté : ' + name);
     }
 
     function deleteAdmin(pin) {
       const admin = adminAccounts.find(a => a.pin === pin);
       if (!admin) return;
-      if (confirm('Supprimer l\'admin "' + admin.name + '" ?')) {
+      if (confirm('Supprimer l\'accès pour ' + admin.name + ' ?')) {
         adminAccounts = adminAccounts.filter(a => a.pin !== pin);
         saveAdmins();
         updateAdminList();
-        showNotif('🗑 Admin "' + admin.name + '" supprime');
+        showNotif('Accès supprimé');
       }
     }
 
@@ -987,10 +989,10 @@
       const el = document.getElementById('adminList');
       if (!el) return;
       if (adminAccounts.length === 0) {
-        el.innerHTML = '<div style="opacity:0.4;padding:10px;font-size:0.85em;">Aucun admin cree</div>';
+        el.innerHTML = '<div style="color:var(--palette-text-secondary);padding:16px 0;font-size:14px;">Aucun hôte supplémentaire</div>';
         return;
       }
-      let html = '<div style="opacity:0.5;margin-bottom:8px;margin-top:10px;">Admins actifs :</div>';
+      let html = '<div class="code-list-title" style="border-top:none; padding-top:0;">Hôtes enregistrés</div>';
       adminAccounts.forEach(a => {
         const now = Date.now();
         const notStarted = a.startsAt && now < a.startsAt;
@@ -1000,11 +1002,11 @@
         const expiryCls = expired ? 'expired' : (notStarted ? 'soon' : (daysLeft <= 7 ? 'soon' : 'ok'));
         html += '<div class="admin-item' + (expired ? ' expired-admin' : '') + '">'
           + '<div class="admin-info">'
-          + '<div class="admin-name">🔑 ' + a.name + (expired ? ' <span style="color:#ff5050;font-size:0.8em;">(Expire)</span>' : '') + '</div>'
+          + '<div class="admin-name">' + a.name + '</div>'
           + '<div class="admin-pin">PIN: ' + a.pin + '</div>'
           + (expiryText ? '<div class="admin-expiry ' + expiryCls + '">' + expiryText + '</div>' : '')
           + '</div>'
-          + '<button class="btn-delete" onclick="deleteAdmin(\'' + a.pin + '\')" title="Supprimer">🗑</button>'
+          + '<button class="btn-delete" onclick="deleteAdmin(\'' + a.pin + '\')">Supprimer</button>'
           + '</div>';
       });
       el.innerHTML = html;
@@ -1032,7 +1034,7 @@
       const connexEl = document.getElementById('guestConnexion');
       guestClient.on('connect', function() {
         connexEl.className = 'connexion ok';
-        connexEl.innerHTML = '<span class="dot green"></span> Connecte';
+        connexEl.innerHTML = '<span class="dot green"></span> Prêt';
         guestClient.subscribe(topicCodeResult);
         guestClient.subscribe(topicAdmins);
       });
@@ -1040,10 +1042,10 @@
         if (topic === topicCodeResult) {
           const resultEl = document.getElementById('guestResult');
           if (message.toString() === 'OK') {
-            resultEl.innerHTML = '<div class="result-msg success">✅ Code valide ! Porte ouverte (5s)</div>';
+            resultEl.innerHTML = '<div class="result-msg success">Code valide. Porte déverrouillée (5s)</div>';
             setTimeout(clearGuest, 5000);
           } else {
-            resultEl.innerHTML = '<div class="result-msg fail">❌ Code invalide ou deja utilise</div>';
+            resultEl.innerHTML = '<div class="result-msg fail">Code invalide ou expiré</div>';
           }
         }
         else if (topic === topicAdmins) {
@@ -1058,21 +1060,20 @@
       });
       guestClient.on('error', function() {
         connexEl.className = 'connexion ko';
-        connexEl.innerHTML = '<span class="dot red"></span> Erreur';
+        connexEl.innerHTML = '<span class="dot red"></span> Erreur réseau';
       });
     }
 
     function submitGuestCode() {
       if (guestInput.length !== 6) return;
 
-      // Verifier si le code est expire (12h) cote client
       const entry = codeHistory.find(c => c.code === guestInput && c.status === 'waiting');
       if (entry && isCodeExpired(entry)) {
-        document.getElementById('guestResult').innerHTML = '<div class="result-msg fail">❌ Ce code a expire (valable 12h)</div>';
+        document.getElementById('guestResult').innerHTML = '<div class="result-msg fail">Ce code a expiré</div>';
         return;
       }
 
-      document.getElementById('guestResult').innerHTML = '<div class="result-msg checking">⏳ Verification...</div>';
+      document.getElementById('guestResult').innerHTML = '<div class="result-msg checking">Vérification...</div>';
       if (guestClient) guestClient.publish(topicUseCode, guestInput);
     }
 
@@ -1107,7 +1108,7 @@
       if (!client || alarmActive) return;
       alarmActive = true;
       document.getElementById('btnAlarme').classList.add('alarming');
-      document.getElementById('btnAlarme').textContent = '🔔 ALARME EN COURS...';
+      document.getElementById('btnAlarme').textContent = 'ALARME ACTIVÉE...';
       client.publish(topicAlarme, 'ON');
     }
 
@@ -1115,11 +1116,10 @@
       if (!client || !alarmActive) return;
       alarmActive = false;
       document.getElementById('btnAlarme').classList.remove('alarming');
-      document.getElementById('btnAlarme').innerHTML = '🔔 Maintenir pour activer l\'alarme';
+      document.getElementById('btnAlarme').innerHTML = 'Maintenir pour l\'alarme';
       client.publish(topicAlarme, 'OFF');
     }
 
-    // Gestion de l'alarme pour souris et tactile (mobile)
     const btnAlarmeEl = document.getElementById('btnAlarme');
     if (btnAlarmeEl) {
       btnAlarmeEl.addEventListener('mousedown', startAlarm);
