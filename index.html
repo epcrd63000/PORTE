@@ -2,8 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Porte Connectée</title>
+  
+  <!-- === CONFIGURATION iOS (PWA) === -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sézame">
+  <link rel="apple-touch-icon" href="Porte_rose.png">
+  
   <link rel="icon" type="image/png" href="logo_trans_rose.png">
   <style>
     /* === VARIABLES & DESIGN SYSTEM AIRBNB === */
@@ -36,6 +43,7 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
+      -webkit-tap-highlight-color: transparent; /* Clean touch feedback on iOS */
     }
     body.site-ready {
       animation: pageFadeIn 0.45s ease-out;
@@ -437,7 +445,7 @@
 
   <!-- ========== ECRAN 1 : CHOIX ========== -->
   <div class="screen screen-start" id="choiceScreen">
-    <img src="logo_trans_rose.png" alt="Logo de la marque" class="brand-logo">
+    <img src="logo_trans_rose.png" alt="Logo de la marque" class="brand-logo" onerror="this.src='Porte_rose.png'">
     <h1>Porte Connectée</h1>
     <div class="subtitle">Contrôle à distance sécurisé</div>
     <button class="choice-btn btn-dark" onclick="showScreen('pinScreen')">Connexion Hôte</button>
@@ -502,7 +510,7 @@
 
   <!-- ========== ECRAN 3 : CONTROLE ADMIN ========== -->
   <div class="screen hidden" id="controlScreen">
-    <img src="logo_trans_rose.png" alt="Logo Sézame" class="panel-logo">
+    <img src="logo_trans_rose.png" alt="Logo Sézame" class="panel-logo" onerror="this.src='Porte_rose.png'">
     <div class="welcome-msg" id="welcomeMsg">
       Bonjour, <span class="name" id="welcomeName">Hôte</span>
       <span class="role" id="welcomeRole"></span>
@@ -605,6 +613,7 @@
     let guestClient = null;
     let isSuperAdmin = false;
     let currentUserName = '';
+    let currentUserPin = ''; // Ajout pour mémoriser l'utilisateur actuel
 
     // ===== ADMIN ACCOUNTS =====
     let adminAccounts = [];
@@ -691,10 +700,12 @@
         document.getElementById('d' + i).className = 'pin-dot' + (i < pinInput.length ? ' filled' : '');
       }
     }
+    
     function checkPin() {
       if (pinInput === SUPER_ADMIN_PIN) {
         isSuperAdmin = true;
         currentUserName = SUPER_ADMIN_NAME;
+        currentUserPin = pinInput;
         loginSuccess();
         return;
       }
@@ -716,6 +727,7 @@
         }
         isSuperAdmin = false;
         currentUserName = admin.name;
+        currentUserPin = pinInput;
         loginSuccess();
         return;
       }
@@ -738,6 +750,39 @@
       updateCodeList();
       updateAdminList();
       connectAdminMQTT();
+      
+      // Vérification périodique de révocation/expiration pour les hôtes standards
+      if (!isSuperAdmin) {
+        setInterval(checkCurrentAccess, 30000); // Toutes les 30 secondes
+      }
+    }
+
+    // Fonction de sécurité pour éjecter l'hôte si son accès a été supprimé ou expiré
+    function checkCurrentAccess() {
+      if (isSuperAdmin) return;
+      
+      const myAccount = adminAccounts.find(a => a.pin === currentUserPin);
+      const now = Date.now();
+      
+      // Si le compte a disparu (supprimé) ou que le temps imparti est écoulé
+      if (!myAccount || (myAccount.expiresAt && now > myAccount.expiresAt) || (myAccount.startsAt && now < myAccount.startsAt)) {
+        
+        // 1. Désactiver la communication MQTT immédiatement
+        if (client) {
+            client.end();
+        }
+        
+        // 2. Désactiver visuellement tous les boutons
+        document.querySelectorAll('#controlScreen .btn').forEach(btn => btn.disabled = true);
+        
+        // 3. Afficher la notification d'éviction
+        showNotif("⚠️ Votre accès a été révoqué ou a expiré.");
+        
+        // 4. Forcer le rechargement de la page pour renvoyer à l'accueil
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      }
     }
 
     // ===== MQTT ADMIN =====
@@ -793,6 +838,11 @@
               adminAccounts = remoteAdmins;
               try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
               updateAdminList();
+              
+              // NEW: Vérifier instantanément si le compte actuel vient d'être supprimé via ce message réseau
+              if (isScreenVisible('controlScreen')) {
+                checkCurrentAccess();
+              }
             }
           } catch(e) {}
         }
