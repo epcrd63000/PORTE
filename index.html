@@ -15,6 +15,1069 @@
   <style>
     /* === VARIABLES & DESIGN SYSTEM AIRBNB === */
     :root {
+      --palette-bg-primary-core: #ff385c;      /* Rausch Red - Le rose foncé du site */
+      --palette-bg-tertiary-core: #e00b41;     /* Deep Rausch */
+      --palette-text-primary-error: #c13515;   /* Error Red */
+      --palette-text-primary: #222222;         /* Near Black */
+      --palette-text-secondary: #6a6a6a;       /* Secondary Gray */
+      --palette-text-focused: #3f3f3f;
+      --palette-surface-light: #f7f7f7;        /* Page background */
+      --palette-surface-element: #f2f2f2;      /* Circular buttons */
+      --palette-border: #dddddd;
+      --palette-border-light: #ebebeb;
+      --shadow-card: rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 6px, rgba(0,0,0,0.1) 0px 4px 8px;
+      --shadow-hover: rgba(0,0,0,0.08) 0px 4px 12px;
+      --shadow-focus: 0 0 0 2px #222222;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
+      background-color: var(--palette-surface-light);
+      color: var(--palette-text-primary);
+      font-weight: 500;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body.site-ready {
+      animation: pageFadeIn 0.45s ease-out;
+    }
+
+    /* === CONTENEURS & CARTES === */
+    .screen {
+      text-align: center;
+      padding: 48px 32px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: var(--shadow-card);
+      max-width: 440px;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+    .screen-start {
+      animation: cardIntro 0.7s ease-out;
+    }
+    .hidden { display: none !important; }
+
+    /* === TYPOGRAPHIE === */
+    .icon { font-size: 3em; margin-bottom: 24px; }
+    .brand-logo { height: 70px; margin-bottom: 24px; object-fit: contain; }
+    h1 { 
+      font-size: 28px; font-weight: 700; margin-bottom: 8px; 
+      letter-spacing: -0.44px; color: var(--palette-text-primary); line-height: 1.18;
+    }
+    .subtitle { 
+      color: var(--palette-text-secondary); font-size: 16px; 
+      font-weight: 400; margin-bottom: 32px; 
+    }
+
+    /* === BOUTONS === */
+    .btn, .choice-btn {
+      display: block; width: 100%; padding: 14px 24px; font-size: 16px;
+      font-weight: 600; font-family: inherit; border-radius: 8px;
+      cursor: pointer; margin: 12px 0; transition: all 0.2s ease;
+      text-align: center; text-decoration: none; outline: none;
+    }
+    .btn:active, .choice-btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+    .btn-primary { background-color: var(--palette-bg-primary-core); color: #ffffff; border: none; }
+    .btn-primary:hover:not(:disabled) { background-color: var(--palette-bg-tertiary-core); }
+    
+    .btn-dark { background-color: var(--palette-text-primary); color: #ffffff; border: none; }
+    .btn-dark:hover:not(:disabled) { box-shadow: var(--shadow-hover); }
+
+    .btn-outline { background-color: #ffffff; color: var(--palette-text-primary); border: 1px solid var(--palette-text-primary); }
+    .btn-outline:hover:not(:disabled) { background-color: var(--palette-surface-light); }
+    .btn-guest { color: var(--palette-bg-primary-core); border-color: var(--palette-bg-primary-core); }
+    .btn-guest:hover:not(:disabled) { background-color: #fff1f4; }
+
+    /* === CLAVIER PIN === */
+    .pin-dots { display: flex; justify-content: center; gap: 16px; margin: 32px 0; }
+    .pin-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1px solid var(--palette-border); transition: all 0.2s;
+    }
+    .pin-dot.filled { background: var(--palette-text-primary); border-color: var(--palette-text-primary); }
+    .pin-dot.error { background: var(--palette-text-primary-error); border-color: var(--palette-text-primary-error); }
+    
+    .keypad {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      max-width: 260px; margin: 0 auto;
+    }
+    .key {
+      width: 64px; height: 64px; border-radius: 50%; font-size: 20px;
+      font-weight: 600; font-family: inherit; border: none;
+      background: var(--palette-surface-element); color: var(--palette-text-primary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      margin: auto; transition: all 0.2s;
+    }
+    .key:hover { background: #e4e4e4; }
+    .key:active { transform: scale(0.92); }
+    .key-del { font-size: 16px; }
+
+    .error-msg { color: var(--palette-text-primary-error); margin-top: 16px; font-size: 14px; font-weight: 500; min-height: 20px; }
+    .back-link { 
+      display: inline-block; margin-top: 24px; color: var(--palette-text-primary); 
+      text-decoration: underline; cursor: pointer; font-size: 14px; font-weight: 600;
+    }
+    .door-icon { width: 64px; height: 64px; object-fit: contain; margin-bottom: 20px; }
+    .panel-logo { height: 52px; margin-bottom: 18px; object-fit: contain; }
+
+    @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cardIntro { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* === CONTROLE ADMIN === */
+    .welcome-msg { font-size: 22px; font-weight: 700; color: var(--palette-text-primary); margin-bottom: 24px; letter-spacing: -0.44px; }
+    .welcome-msg .name { color: var(--palette-text-primary); }
+    .welcome-msg .role { font-size: 14px; font-weight: 500; color: var(--palette-text-secondary); display: block; margin-top: 4px; letter-spacing: normal; }
+    
+    .status { font-size: 14px; font-weight: 600; margin: 20px 0; padding: 8px 16px; border-radius: 14px; display: inline-block; }
+    .status.on { background: #e8f5e9; color: #008a05; }
+    .status.off { background: var(--palette-surface-element); color: var(--palette-text-primary); }
+    .status.waiting { background: #fff8e1; color: #b26a00; }
+
+    .separator { height: 1px; background: var(--palette-border-light); margin: 24px 0; }
+    
+    .alarm-label { font-size: 13px; font-weight: 600; color: var(--palette-text-primary); margin-bottom: 12px; }
+    .btn-alarm { background: #ffffff; color: var(--palette-text-primary-error); border: 1px solid var(--palette-border); user-select: none; }
+    .btn-alarm:hover:not(:disabled) { border-color: var(--palette-text-primary-error); }
+    .btn-alarm.alarming { background: var(--palette-text-primary-error); color: #ffffff; border-color: var(--palette-text-primary-error); }
+
+    .connexion { margin-top: 16px; font-size: 13px; font-weight: 500; }
+    .connexion.ok { color: #008a05; }
+    .connexion.ko { color: var(--palette-text-primary-error); }
+    .connexion.loading { color: var(--palette-text-secondary); }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .dot.green { background: #008a05; }
+    .dot.red { background: var(--palette-text-primary-error); }
+    .dot.yellow { background: #b26a00; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* === SECTION CODES JETABLES === */
+    .section-title { font-size: 20px; font-weight: 600; margin: 32px 0 16px 0; letter-spacing: -0.18px; color: var(--palette-text-primary); text-align: left; }
+    .generated-code {
+      margin: 20px 0; padding: 24px; background: var(--palette-surface-light); border-radius: 16px; font-size: 32px;
+      font-weight: 700; letter-spacing: 8px; color: var(--palette-text-primary); cursor: pointer; border: 1px solid var(--palette-border-light); transition: all 0.2s;
+    }
+    .generated-code:hover { border-color: var(--palette-text-primary); }
+    .generated-code .copy-hint { display: block; font-size: 13px; letter-spacing: normal; color: var(--palette-text-secondary); font-weight: 500; margin-top: 8px; }
+    
+    .code-list { text-align: left; margin-top: 16px; }
+    .code-list-title { color: var(--palette-text-primary); font-size: 14px; font-weight: 600; margin: 24px 0 12px 0; padding-top: 16px; border-top: 1px solid var(--palette-border-light); }
+    
+    .code-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--palette-border-light); }
+    .code-item:last-child { border-bottom: none; }
+    .code-item span:first-child { font-family: monospace; letter-spacing: 2px; font-weight: 600; font-size: 16px; }
+    
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: 14px; font-weight: 600; }
+    .badge.waiting { background: var(--palette-surface-element); color: var(--palette-text-primary); }
+    .badge.used { background: #e8f5e9; color: #008a05; }
+    .badge.expired { background: #fce8e6; color: var(--palette-text-primary-error); }
+    .code-item.used { opacity: 0.6; }
+    .code-item.used span:first-child { text-decoration: line-through; }
+    .code-item.expired { opacity: 0.5; }
+    .code-item.expired span:first-child { text-decoration: line-through; color: var(--palette-text-secondary); }
+    
+    .btn-delete { background: transparent; border: none; color: var(--palette-text-secondary); font-size: 14px; cursor: pointer; padding: 4px 8px; margin-left: 8px; text-decoration: underline; }
+    .btn-delete:hover { color: var(--palette-text-primary-error); }
+
+    .notif {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); padding: 14px 24px; border-radius: 8px;
+      font-weight: 600; font-size: 14px; z-index: 999; animation: slideUp 0.3s ease-out; background: var(--palette-text-primary); color: #ffffff; box-shadow: var(--shadow-hover);
+    }
+    @keyframes slideUp { from { transform: translateX(-50%) translateY(30px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+
+    /* === ECRAN CODE INVITE === */
+    .code-input-display { font-size: 40px; font-weight: 700; letter-spacing: 12px; margin: 24px 0; min-height: 48px; color: var(--palette-text-primary); }
+    .result-msg { margin: 16px 0; padding: 16px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+    .result-msg.success { background: #e8f5e9; color: #008a05; }
+    .result-msg.fail { background: #fce8e6; color: var(--palette-text-primary-error); }
+    .result-msg.checking { background: #fff8e1; color: #b26a00; }
+
+    /* === POPUP MODAL === */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.2s; padding: 20px;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal { background: #ffffff; border-radius: 20px; padding: 32px; width: 100%; max-width: 400px; box-shadow: var(--shadow-card); }
+    .modal h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; text-align: left; }
+    .modal-input, .modal-select, .modal-date { width: 100%; padding: 16px; border-radius: 8px; border: 1px solid var(--palette-border); background: #ffffff; color: var(--palette-text-primary); font-size: 16px; font-family: inherit; margin-bottom: 16px; outline: none; transition: all 0.2s; }
+    .modal-input:focus, .modal-select:focus, .modal-date:focus { border-color: var(--palette-text-primary); box-shadow: var(--shadow-focus); }
+    .modal-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23222222' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+    .date-row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .date-field { flex: 1; }
+    .date-label { font-size: 12px; font-weight: 600; color: var(--palette-text-secondary); margin-bottom: 8px; text-align: left; display: block; }
+    .modal-btns { display: flex; gap: 16px; margin-top: 24px; }
+    .modal-btns button { flex: 1; margin: 0; }
+
+    /* === ADMIN LIST === */
+    .admin-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--palette-border-light); text-align: left; }
+    .admin-item.expired-admin { opacity: 0.5; }
+    .admin-item .admin-info { flex: 1; }
+    .admin-item .admin-name { font-weight: 600; font-size: 16px; color: var(--palette-text-primary); }
+    .admin-item .admin-pin { font-family: monospace; color: var(--palette-text-secondary); font-size: 14px; margin-top: 4px; }
+    .admin-item .admin-expiry { font-size: 12px; margin-top: 4px; font-weight: 500; }
+    .admin-item .admin-expiry.ok { color: #008a05; }
+    .admin-item .admin-expiry.soon { color: #b26a00; }
+    .admin-item .admin-expiry.expired { color: var(--palette-text-primary-error); }
+
+    /* =========================================
+       STYLE DE L'ALARME EFFRACTION (GYROPHARE ROSE)
+       ========================================= */
+    #effractionOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: none; 
+      flex-direction: column; justify-content: center; align-items: center;
+      color: white; text-align: center; z-index: 9999; padding: 20px;
+    }
+    @keyframes gyrophare {
+      0%   { background-color: var(--palette-bg-primary-core); box-shadow: inset 0 0 100px rgba(0,0,0,0.5); }
+      50%  { background-color: #7a0018; box-shadow: inset 0 0 300px rgba(0,0,0,0.9); }
+      100% { background-color: var(--palette-bg-primary-core); box-shadow: inset 0 0 100px rgba(0,0,0,0.5); }
+    }
+    .active-alarm { display: flex !important; animation: gyrophare 0.6s infinite; }
+    @keyframes textPulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    .alert-icon { font-size: 80px; margin-bottom: 20px; animation: textPulse 0.6s infinite; }
+    .alert-title { font-size: 40px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    .alert-subtitle { font-size: 20px; font-weight: 600; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); animation: textPulse 0.6s infinite; }
+    .alert-details { margin-top: 30px; font-size: 16px; opacity: 0.9; background: rgba(0,0,0,0.3); padding: 12px 24px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+
+  <!-- ========== ECRAN 1 : CHOIX ========== -->
+  <div class="screen screen-start" id="choiceScreen">
+    <img src="logo_trans_rose.png" alt="Logo de la marque" class="brand-logo" onerror="this.src='Porte_rose.png'">
+    <h1>Porte Connectée</h1>
+    <div class="subtitle">Contrôle à distance sécurisé</div>
+    <button class="choice-btn btn-dark" onclick="showScreen('pinScreen')">Connexion Hôte</button>
+    <button class="choice-btn btn-outline btn-guest" onclick="showScreen('guestScreen')">J'ai un code invité</button>
+  </div>
+
+  <!-- ========== ECRAN 2a : PIN ADMIN ========== -->
+  <div class="screen hidden" id="pinScreen">
+    <img src="Porte_rose.png" alt="Icône porte" class="door-icon">
+    <h1>Accès Hôte</h1>
+    <div class="subtitle">Entrez votre code PIN</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="keypad">
+      <button class="key" onclick="addDigit('1')">1</button>
+      <button class="key" onclick="addDigit('2')">2</button>
+      <button class="key" onclick="addDigit('3')">3</button>
+      <button class="key" onclick="addDigit('4')">4</button>
+      <button class="key" onclick="addDigit('5')">5</button>
+      <button class="key" onclick="addDigit('6')">6</button>
+      <button class="key" onclick="addDigit('7')">7</button>
+      <button class="key" onclick="addDigit('8')">8</button>
+      <button class="key" onclick="addDigit('9')">9</button>
+      <button class="key key-del" onclick="clearPin()">Effacer</button>
+      <button class="key" onclick="addDigit('0')">0</button>
+      <button class="key key-del" onclick="removeDigit()">←</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="back-link" onclick="showScreen('choiceScreen')">Retour</div>
+  </div>
+
+  <!-- ========== ECRAN 2b : CODE INVITE ========== -->
+  <div class="screen hidden" id="guestScreen">
+    <img src="Porte_rose.png" alt="Icône porte" class="door-icon">
+    <h1>Code Invité</h1>
+    <div class="subtitle">Entrez le code à 6 chiffres</div>
+    <div class="code-input-display" id="codeDisplay">_</div>
+    <div class="keypad">
+      <button class="key" onclick="addGuestDigit('1')">1</button>
+      <button class="key" onclick="addGuestDigit('2')">2</button>
+      <button class="key" onclick="addGuestDigit('3')">3</button>
+      <button class="key" onclick="addGuestDigit('4')">4</button>
+      <button class="key" onclick="addGuestDigit('5')">5</button>
+      <button class="key" onclick="addGuestDigit('6')">6</button>
+      <button class="key" onclick="addGuestDigit('7')">7</button>
+      <button class="key" onclick="addGuestDigit('8')">8</button>
+      <button class="key" onclick="addGuestDigit('9')">9</button>
+      <button class="key key-del" onclick="clearGuest()">Effacer</button>
+      <button class="key" onclick="addGuestDigit('0')">0</button>
+      <button class="key" onclick="submitGuestCode()" style="background:var(--palette-text-primary);color:white;">✓</button>
+    </div>
+    <div id="guestResult"></div>
+    <div class="connexion loading" id="guestConnexion">
+      <span class="dot yellow"></span> Connexion...
+    </div>
+    <div class="back-link" onclick="showScreen('choiceScreen')">Retour</div>
+  </div>
+
+  <!-- ========== ECRAN 3 : CONTROLE ADMIN ========== -->
+  <div class="screen hidden" id="controlScreen">
+    <img src="logo_trans_rose.png" alt="Logo Sézame" class="panel-logo" onerror="this.src='Porte_rose.png'">
+    <div class="welcome-msg" id="welcomeMsg">
+      Bonjour, <span class="name" id="welcomeName">Hôte</span>
+      <span class="role" id="welcomeRole"></span>
+    </div>
+
+    <div class="status waiting" id="status">Vérification de la porte...</div>
+
+    <button class="btn btn-dark" id="btnOn" onclick="sendUnlockPulse()" disabled>Déverrouiller</button>
+    <button class="btn btn-primary" id="btnHold" onclick="sendHoldOpen()" disabled>Laisser ouvert</button>
+    <button class="btn btn-outline hidden" id="btnOff" onclick="lockDoor()" disabled>Verrouiller</button>
+
+    <!-- ALARME -->
+    <div class="separator"></div>
+    <div class="alarm-label">Urgence</div>
+    <button class="btn btn-alarm" id="btnAlarme" disabled>
+      Maintenir pour l'alarme
+    </button>
+
+    <div class="connexion loading" id="adminConnexion">
+      <span class="dot yellow"></span> Synchronisation...
+    </div>
+
+    <!-- SECTION CODES JETABLES -->
+    <div class="section-title">Codes invités</div>
+    <button class="btn btn-primary" onclick="generateCode()">Générer un code (12h)</button>
+    
+    <div class="generated-code hidden" id="generatedCode" onclick="copyCode()">
+      <span id="codeText"></span>
+      <span class="copy-hint">Appuyer pour copier</span>
+    </div>
+    
+    <div class="code-list" id="codeList"></div>
+    <div class="back-link" onclick="clearHistory()" style="color:var(--palette-text-primary-error); font-weight: 500;">Vider l'historique</div>
+
+    <!-- SECTION GESTION ADMINS (super admin only) -->
+    <div id="superAdminSection" class="hidden">
+      <div class="section-title">Gestion des hôtes</div>
+      <button class="btn btn-outline" onclick="showCreateAdminModal()">Ajouter un hôte</button>
+      <div id="adminList" class="code-list"></div>
+    </div>
+
+    <div class="separator" style="margin-top: 32px;"></div>
+    <div class="back-link" style="margin-top:0;" onclick="location.reload()">Se déconnecter</div>
+  </div>
+
+  <!-- ========== MODAL CREER ADMIN ========== -->
+  <div class="modal-overlay hidden" id="createAdminModal">
+    <div class="modal">
+      <h2>Nouvel Hôte</h2>
+      <input class="modal-input" id="newAdminName" type="text" placeholder="Nom complet (ex: Thomas)" maxlength="20" autocomplete="off">
+      <input class="modal-input" id="newAdminPin" type="tel" placeholder="Code PIN (4 chiffres)" maxlength="4" autocomplete="off">
+      <select class="modal-select" id="newAdminDuration" onchange="onDurationChange()">
+        <option value="forever" selected>Accès permanent</option>
+        <option value="day">Accès de 24 heures</option>
+        <option value="week">Accès de 7 jours</option>
+        <option value="month">Accès de 1 mois</option>
+        <option value="custom">Dates personnalisées</option>
+      </select>
+      <div class="date-row hidden" id="customDateRow">
+        <div class="date-field">
+          <label class="date-label">Arrivée</label>
+          <input class="modal-date" id="newAdminStart" type="date">
+        </div>
+        <div class="date-field">
+          <label class="date-label">Départ</label>
+          <input class="modal-date" id="newAdminEnd" type="date">
+        </div>
+      </div>
+      <div class="error-msg" id="modalError" style="text-align:left; margin-top: 0; margin-bottom: 16px;"></div>
+      <div class="modal-btns">
+        <button class="btn btn-outline" onclick="hideCreateAdminModal()">Annuler</button>
+        <button class="btn btn-dark" onclick="createAdmin()">Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY ALARME EFFRACTION -->
+  <div id="effractionOverlay">
+    <div class="alert-icon">⚠️</div>
+    <h1 class="alert-title">Code Incorrect</h1>
+    <h2 class="alert-subtitle">Tentative d'effraction détectée</h2>
+    <div class="alert-details">
+      Propriétaire alerté • Coordonnées enregistrées
+    </div>
+  </div>
+
+  <!-- Intégration de la librairie MQTT -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const CODE_EXPIRY_MS = 12 * 60 * 60 * 1000;
+
+    // MQTT topics
+    const topicCmd        = 'porte-epcrd-2026/commande';
+    const topicState      = 'porte-epcrd-2026/etat';
+    const topicAddCode    = 'porte-epcrd-2026/addcode';
+    const topicUseCode    = 'porte-epcrd-2026/usecode';
+    const topicCodeResult = 'porte-epcrd-2026/coderesult';
+    const topicCodeUsed   = 'porte-epcrd-2026/codeused';
+    const topicDelCode    = 'porte-epcrd-2026/delcode';
+    const topicHistory    = 'porte-epcrd-2026/history';
+    const topicAdmins     = 'porte-epcrd-2026/admins';
+    const topicAlarme     = 'porte-epcrd-2026/alarme';
+    const topicAuthReq    = 'porte-epcrd-2026/auth_req';
+    const topicAuthRes    = 'porte-epcrd-2026/auth_res';
+
+    let client = null;
+    let isSuperAdmin = false;
+    let currentUserName = '';
+    let currentUserPin = '';
+
+    // ===== GESTION DE L'ALARME VISUELLE =====
+    function triggerEffractionAlarm() {
+      const overlay = document.getElementById('effractionOverlay');
+      overlay.classList.add('active-alarm');
+      
+      // Désactiver le clavier pendant 5 secondes
+      document.querySelectorAll('.key').forEach(k => k.disabled = true);
+
+      setTimeout(() => {
+        overlay.classList.remove('active-alarm');
+        document.querySelectorAll('.key').forEach(k => k.disabled = false);
+        
+        // Vider les champs pour un nouvel essai
+        if(isScreenVisible('pinScreen')) {
+          pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = '';
+        }
+        if(isScreenVisible('guestScreen')) {
+          clearGuest();
+        }
+      }, 5000); // 5 secondes de blocage
+    }
+
+    // ===== ADMIN ACCOUNTS =====
+    let adminAccounts = [];
+    try {
+      const saved = localStorage.getItem('porte_admins');
+      if (saved) adminAccounts = JSON.parse(saved);
+    } catch(e) {}
+
+    function saveAdmins() {
+      try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+      if (client && client.connected) {
+        client.publish(topicAdmins, JSON.stringify(adminAccounts), { retain: true });
+      }
+    }
+
+    // ===== CODE HISTORY =====
+    let codeHistory = [];
+    try {
+      const saved = localStorage.getItem('porte_codeHistory');
+      if (saved) codeHistory = JSON.parse(saved);
+    } catch(e) {}
+
+    function saveHistory() {
+      try { localStorage.setItem('porte_codeHistory', JSON.stringify(codeHistory)); } catch(e) {}
+      if (client && client.connected) {
+        client.publish(topicHistory, JSON.stringify(codeHistory), { retain: true });
+      }
+    }
+
+    function isCodeExpired(entry) {
+      if (!entry.createdAt) return false; 
+      return Date.now() > entry.createdAt + CODE_EXPIRY_MS;
+    }
+
+    function formatExpiry(entry) {
+      if (!entry.createdAt) return '';
+      const expiresAt = entry.createdAt + CODE_EXPIRY_MS;
+      const remaining = expiresAt - Date.now();
+      if (remaining <= 0) return 'Expiré';
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      if (h > 0) return 'Expire dans ' + h + 'h' + (m > 0 ? m + 'm' : '');
+      return 'Expire dans ' + m + 'min';
+    }
+
+    function formatAdminExpiry(admin) {
+      const fmt = ts => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const now = Date.now();
+      if (admin.startsAt && admin.expiresAt) {
+        if (now < admin.startsAt) return 'Du ' + fmt(admin.startsAt) + ' au ' + fmt(admin.expiresAt) + ' (En attente)';
+        if (now > admin.expiresAt) return 'Expiré le ' + fmt(admin.expiresAt);
+        const days = Math.floor((admin.expiresAt - now) / 86400000);
+        return 'Jusqu\'au ' + fmt(admin.expiresAt) + ' (' + days + 'j restant' + (days > 1 ? 's' : '') + ')';
+      }
+      if (!admin.expiresAt) return '';
+      const remaining = admin.expiresAt - now;
+      if (remaining <= 0) return 'Accès expiré';
+      const days = Math.floor(remaining / 86400000);
+      return 'Expire dans ' + days + ' jour' + (days > 1 ? 's' : '');
+    }
+
+    // ===== NAVIGATION & MQTT GLOBAL =====
+    window.addEventListener('load', function() {
+      document.body.classList.add('site-ready');
+      initGlobalMQTT();
+    });
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    // Nettoyeur temporel des codes
+    function cleanExpiredCodes() {
+      if (!currentUserName) return;
+      let historyChanged = false;
+      codeHistory.forEach(c => {
+        if (c.status === 'waiting' && isCodeExpired(c)) {
+          c.status = 'expired';
+          historyChanged = true;
+          if (client && client.connected) client.publish(topicDelCode, c.code);
+        }
+      });
+      if (historyChanged) { saveHistory(); updateCodeList(); }
+    }
+
+    function initGlobalMQTT() {
+      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: 'app-porte-' + Math.random().toString(36).substr(2, 8),
+        clean: true
+      });
+
+      client.on('connect', function() {
+        const guestConnex = document.getElementById('guestConnexion');
+        if (guestConnex) { guestConnex.className = 'connexion ok'; guestConnex.innerHTML = '<span class="dot green"></span> Prêt'; }
+
+        const adminConnex = document.getElementById('adminConnexion');
+        if (adminConnex) {
+           adminConnex.className = 'connexion ok';
+           adminConnex.innerHTML = '<span class="dot green"></span> Synchronisé';
+           if (currentUserName) {
+             const btnOn = document.getElementById('btnOn');
+             const btnHold = document.getElementById('btnHold');
+             const btnAlarmeEl = document.getElementById('btnAlarme');
+             if (btnOn) btnOn.disabled = false;
+             if (btnHold) btnHold.disabled = false;
+             if (btnAlarmeEl) btnAlarmeEl.disabled = false;
+           }
+        }
+
+        client.subscribe(topicAdmins);
+        client.subscribe(topicCodeResult);
+        client.subscribe(topicAuthRes);
+
+        if (currentUserName) {
+           client.subscribe(topicState);
+           client.subscribe(topicCodeUsed);
+           client.subscribe(topicAddCode);
+           client.subscribe(topicHistory);
+        }
+
+        cleanExpiredCodes();
+        setInterval(cleanExpiredCodes, 60000);
+      });
+
+      client.on('error', function() {
+        const adminConnex = document.getElementById('adminConnexion');
+        if (adminConnex) { adminConnex.className = 'connexion ko'; adminConnex.innerHTML = '<span class="dot red"></span> Hors ligne'; }
+        const guestConnex = document.getElementById('guestConnexion');
+        if (guestConnex) { guestConnex.className = 'connexion ko'; guestConnex.innerHTML = '<span class="dot red"></span> Hors ligne'; }
+      });
+
+      client.on('message', function(topic, message) {
+        const msg = message.toString();
+
+        if (topic === topicAuthRes) handleAuthResponse(msg);
+        else if (topic === topicCodeResult) handleGuestCodeResult(msg);
+        else if (topic === topicState) updateAdminUI(msg);
+        else if (topic === topicCodeUsed) markCodeUsed(msg);
+        else if (topic === topicAdmins) handleAdminsSync(msg);
+        else if (topic === topicHistory) handleHistorySync(msg);
+        else if (topic === topicAddCode) {
+          const exists = codeHistory.find(c => c.code === msg);
+          if (!exists) {
+            const now = new Date();
+            codeHistory.unshift({ code: msg, status: 'waiting', time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'), from: 'autre hôte', createdAt: Date.now() });
+            saveHistory();
+            if (currentUserName) updateCodeList();
+            showNotif('Nouveau code invité créé : ' + msg);
+          }
+        }
+      });
+    }
+
+    function handleAdminsSync(msg) {
+      try {
+        const remoteAdmins = JSON.parse(msg);
+        if (Array.isArray(remoteAdmins)) {
+          adminAccounts = remoteAdmins;
+          try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+          if (currentUserName && isSuperAdmin) updateAdminList();
+          if (isScreenVisible('controlScreen')) checkCurrentAccess();
+        }
+      } catch(e) {}
+    }
+
+    function handleHistorySync(msg) {
+      try {
+        const remoteHistory = JSON.parse(msg);
+        if (Array.isArray(remoteHistory) && remoteHistory.length > 0) {
+          const merged = new Map();
+          remoteHistory.forEach(c => merged.set(c.code, c));
+          codeHistory.forEach(c => {
+            const existing = merged.get(c.code);
+            if (!existing) merged.set(c.code, c);
+            else if (c.status === 'used' && existing.status === 'waiting') merged.set(c.code, c);
+          });
+          codeHistory = Array.from(merged.values());
+          try { localStorage.setItem('porte_codeHistory', JSON.stringify(codeHistory)); } catch(e) {}
+          if (currentUserName) updateCodeList();
+        }
+      } catch(e) {}
+    }
+
+    // ===== PIN ADMIN : VALIDATION SÉCURISÉE =====
+    let pinInput = '';
+    let authTimeout = null;
+
+    function addDigit(d) {
+      if (pinInput.length >= 4) return;
+      pinInput += d;
+      updateDots();
+      if (pinInput.length === 4) setTimeout(checkPin, 200);
+    }
+    function removeDigit() { pinInput = pinInput.slice(0, -1); updateDots(); document.getElementById('errorMsg').textContent = ''; }
+    function clearPin() { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }
+    function updateDots() {
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('d' + i).className = 'pin-dot' + (i < pinInput.length ? ' filled' : '');
+      }
+    }
+    
+    function checkPin() {
+      const admin = adminAccounts.find(a => a.pin === pinInput);
+      if (admin) {
+        const now = Date.now();
+        if (admin.startsAt && now < admin.startsAt) {
+          triggerEffractionAlarm(); // Alarme si tentative en dehors des dates
+          return;
+        }
+        if (admin.expiresAt && now > admin.expiresAt) {
+          triggerEffractionAlarm(); // Alarme si expiré
+          return;
+        }
+        isSuperAdmin = false;
+        currentUserName = admin.name;
+        currentUserPin = pinInput;
+        loginSuccess();
+        return;
+      }
+
+      document.getElementById('errorMsg').style.color = '#b26a00';
+      document.getElementById('errorMsg').textContent = 'Vérification sécurisée...';
+      
+      if (client && client.connected) {
+        client.publish(topicAuthReq, pinInput);
+        authTimeout = setTimeout(() => {
+          document.getElementById('errorMsg').style.color = 'var(--palette-text-primary-error)';
+          document.getElementById('errorMsg').textContent = 'Erreur : Arduino injoignable.';
+          setTimeout(() => { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }, 2000);
+        }, 5000);
+      } else {
+        document.getElementById('errorMsg').style.color = 'var(--palette-text-primary-error)';
+        document.getElementById('errorMsg').textContent = 'Serveur déconnecté, veuillez patienter.';
+        setTimeout(() => { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }, 2000);
+      }
+    }
+
+    function handleAuthResponse(response) {
+      if (authTimeout) clearTimeout(authTimeout);
+      
+      if (response === 'ACCES_VALIDE') {
+        isSuperAdmin = true;
+        currentUserName = 'Propriétaire';
+        currentUserPin = pinInput;
+        pinInput = '';
+        updateDots();
+        document.getElementById('errorMsg').textContent = '';
+        loginSuccess();
+      } else {
+        // ALARME SI MAUVAIS CODE
+        triggerEffractionAlarm();
+      }
+    }
+
+    function loginSuccess() {
+      showScreen('controlScreen');
+      document.getElementById('welcomeName').textContent = currentUserName;
+      document.getElementById('welcomeRole').textContent = isSuperAdmin ? 'Admin Principal' : 'Hôte';
+      document.getElementById('superAdminSection').classList.toggle('hidden', !isSuperAdmin);
+      
+      cleanExpiredCodes();
+      updateCodeList();
+      updateAdminList();
+      
+      if (client && client.connected) {
+         client.subscribe(topicState);
+         client.subscribe(topicCodeUsed);
+         client.subscribe(topicAddCode);
+         client.subscribe(topicHistory);
+
+         const btnOn = document.getElementById('btnOn');
+         const btnHold = document.getElementById('btnHold');
+         const btnAlarmeEl = document.getElementById('btnAlarme');
+         if (btnOn) btnOn.disabled = false;
+         if (btnHold) btnHold.disabled = false;
+         if (btnAlarmeEl) btnAlarmeEl.disabled = false;
+      }
+      if (!isSuperAdmin) setInterval(checkCurrentAccess, 30000);
+    }
+
+    function checkCurrentAccess() {
+      if (isSuperAdmin) return;
+      const myAccount = adminAccounts.find(a => a.pin === currentUserPin);
+      const now = Date.now();
+      if (!myAccount || (myAccount.expiresAt && now > myAccount.expiresAt) || (myAccount.startsAt && now < myAccount.startsAt)) {
+        if (client) client.end();
+        document.querySelectorAll('#controlScreen .btn').forEach(btn => btn.disabled = true);
+        showNotif("⚠️ Votre accès a été révoqué ou a expiré.");
+        setTimeout(() => location.reload(), 3000);
+      }
+    }
+
+    function updateAdminUI(state) {
+      const statusEl = document.getElementById('status');
+      const btnOff = document.getElementById('btnOff');
+      if (state === 'HOLD') {
+        statusEl.className = 'status on'; statusEl.textContent = 'Porte maintenue ouverte';
+        if (btnOff) { btnOff.classList.remove('hidden'); btnOff.disabled = false; }
+      } else if (state === 'ON') {
+        statusEl.className = 'status on'; statusEl.textContent = 'Porte déverrouillée';
+        if (btnOff) { btnOff.classList.remove('hidden'); btnOff.disabled = false; }
+      } else {
+        statusEl.className = 'status off'; statusEl.textContent = 'Porte verrouillée';
+        if (btnOff) { btnOff.disabled = true; btnOff.classList.add('hidden'); }
+      }
+    }
+
+    function send(command) { if (client) client.publish(topicCmd, command); }
+    function sendUnlockPulse() { send('ON'); }
+    function sendHoldOpen() {
+      send('HOLD');
+      const btnOff = document.getElementById('btnOff');
+      if (btnOff) { btnOff.classList.remove('hidden'); btnOff.disabled = false; }
+      const statusEl = document.getElementById('status');
+      if (statusEl) { statusEl.className = 'status on'; statusEl.textContent = 'Porte maintenue ouverte'; }
+    }
+    function lockDoor() {
+      send('OFF');
+      const btnOff = document.getElementById('btnOff');
+      if (btnOff) { btnOff.disabled = true; btnOff.classList.add('hidden'); }
+      const statusEl = document.getElementById('status');
+      if (statusEl) { statusEl.className = 'status off'; statusEl.textContent = 'Porte verrouillée'; }
+    }
+
+    // ===== GENERATION DE CODES JETABLES =====
+    function generateCode() {
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const now = new Date();
+      const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      codeHistory.unshift({ code: code, status: 'waiting', time: time, from: currentUserName, createdAt: Date.now() });
+      saveHistory();
+      if (client) client.publish(topicAddCode, code);
+      const el = document.getElementById('generatedCode');
+      document.getElementById('codeText').textContent = code;
+      el.classList.remove('hidden');
+      updateCodeList();
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeText').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const el = document.getElementById('generatedCode');
+        const old = el.querySelector('.copy-hint').textContent;
+        el.querySelector('.copy-hint').textContent = 'Copié dans le presse-papier';
+        setTimeout(() => el.querySelector('.copy-hint').textContent = old, 2000);
+      });
+    }
+
+    function markCodeUsed(code) {
+      const entry = codeHistory.find(c => c.code === code);
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      if (entry) {
+        entry.status = 'used'; entry.usedAt = timeStr;
+      } else {
+        codeHistory.unshift({ code: code, status: 'used', time: '??:??', usedAt: timeStr, from: 'inconnu', createdAt: Date.now() });
+      }
+      saveHistory();
+      updateCodeList();
+      showNotif('Le code ' + code + ' a été utilisé. Porte ouverte.');
+    }
+
+    function clearHistory() {
+      if (confirm('Êtes-vous sûr de vouloir supprimer l\'historique des codes ?')) {
+        codeHistory.forEach(c => {
+           if (c.status === 'waiting' && client && client.connected) client.publish(topicDelCode, c.code);
+        });
+        codeHistory = []; saveHistory(); updateCodeList();
+        document.getElementById('generatedCode').classList.add('hidden');
+      }
+    }
+
+    function deleteCodeFromHistory(code) {
+      const entry = codeHistory.find(c => c.code === code);
+      if (!entry) return;
+      if (entry.status === 'waiting' && client) client.publish(topicDelCode, code);
+      codeHistory = codeHistory.filter(c => c.code !== code);
+      saveHistory(); updateCodeList();
+      if (document.getElementById('codeText').textContent === code) document.getElementById('generatedCode').classList.add('hidden');
+      showNotif('Code supprimé');
+    }
+
+    function showNotif(text) {
+      const old = document.querySelector('.notif');
+      if (old) old.remove();
+      const n = document.createElement('div');
+      n.className = 'notif'; n.textContent = text;
+      document.body.appendChild(n);
+      setTimeout(() => n.remove(), 4000);
+    }
+
+    function updateCodeList() {
+      const el = document.getElementById('codeList');
+      if (codeHistory.length === 0) { el.innerHTML = ''; return; }
+      const active = codeHistory.filter(c => c.status !== 'used');
+      const used = codeHistory.filter(c => c.status === 'used');
+      let html = '';
+
+      if (active.length > 0) {
+        html += '<div class="code-list-title" style="border-top:none; padding-top:0;">En attente</div>';
+        active.forEach(c => {
+          const expired = isCodeExpired(c);
+          let badge = expired ? '<span class="badge expired">Expiré</span>' : '<span class="badge waiting">' + (formatExpiry(c) || 'Actif') + '</span>';
+          const from = c.from ? ' <span style="color:var(--palette-text-secondary);font-size:12px;font-weight:400;display:block;">Créé par ' + c.from + '</span>' : '';
+          html += '<div class="code-item' + (expired ? ' expired' : '') + '"><div><span>' + c.code + '</span>' + from + '</div><div style="display:flex;align-items:center;">' + badge + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')">Supprimer</button></div></div>';
+        });
+      }
+
+      if (used.length > 0) {
+        html += '<div class="code-list-title">Historique d\'utilisation</div>';
+        used.forEach(c => {
+          const badge = '<span class="badge used">Utilisé à ' + (c.usedAt || '??:??') + '</span>';
+          const from = c.from ? ' <span style="color:var(--palette-text-secondary);font-size:12px;font-weight:400;display:block;">Créé par ' + c.from + '</span>' : '';
+          html += '<div class="code-item used"><div><span>' + c.code + '</span>' + from + '</div><div style="display:flex;align-items:center;">' + badge + '<button class="btn-delete" onclick="deleteCodeFromHistory(\'' + c.code + '\')">Supprimer</button></div></div>';
+        });
+      }
+
+      el.innerHTML = html;
+    }
+
+    // ===== GESTION ADMINS (super admin only) =====
+    function onDurationChange() {
+      const val = document.getElementById('newAdminDuration').value;
+      const customRow = document.getElementById('customDateRow');
+      if (val === 'custom') {
+        customRow.classList.remove('hidden');
+        const today = new Date(); const in1month = new Date(); in1month.setMonth(in1month.getMonth() + 1);
+        document.getElementById('newAdminStart').value = today.toISOString().split('T')[0];
+        document.getElementById('newAdminEnd').value = in1month.toISOString().split('T')[0];
+      } else {
+        customRow.classList.add('hidden');
+      }
+    }
+
+    function showCreateAdminModal() {
+      document.getElementById('createAdminModal').classList.remove('hidden');
+      document.getElementById('newAdminName').value = '';
+      document.getElementById('newAdminPin').value = '';
+      document.getElementById('newAdminDuration').value = 'forever';
+      document.getElementById('customDateRow').classList.add('hidden');
+      document.getElementById('modalError').textContent = '';
+      document.getElementById('newAdminName').focus();
+    }
+    function hideCreateAdminModal() { document.getElementById('createAdminModal').classList.add('hidden'); }
+
+    function createAdmin() {
+      const name = document.getElementById('newAdminName').value.trim();
+      const pin = document.getElementById('newAdminPin').value.trim();
+      const duration = document.getElementById('newAdminDuration').value;
+      const errEl = document.getElementById('modalError');
+
+      if (!name) { errEl.textContent = 'Veuillez saisir un nom'; return; }
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'Le code PIN doit comporter 4 chiffres'; return; }
+      if (adminAccounts.find(a => a.pin === pin)) { errEl.textContent = 'Ce code PIN est déjà utilisé'; return; }
+
+      let startsAt = null, expiresAt = null, label = '';
+      const now = Date.now();
+
+      if (duration === 'forever') { label = 'accès permanent'; }
+      else if (duration === 'day') { startsAt = now; expiresAt = now + 86400000; label = '24 heures'; }
+      else if (duration === 'week') { startsAt = now; expiresAt = now + 7 * 86400000; label = '7 jours'; }
+      else if (duration === 'month') { startsAt = now; const end = new Date(); end.setMonth(end.getMonth() + 1); expiresAt = end.getTime(); label = '1 mois'; }
+      else if (duration === 'custom') {
+        const startVal = document.getElementById('newAdminStart').value;
+        const endVal = document.getElementById('newAdminEnd').value;
+        if (!startVal || !endVal) { errEl.textContent = 'Sélectionnez les dates'; return; }
+        startsAt = new Date(startVal).getTime(); expiresAt = new Date(endVal).getTime() + 86399999;
+        if (expiresAt <= startsAt) { errEl.textContent = 'La date de fin doit être ultérieure au début'; return; }
+        label = 'du ' + new Date(startsAt).toLocaleDateString('fr-FR') + ' au ' + new Date(expiresAt).toLocaleDateString('fr-FR');
+      }
+
+      adminAccounts.push({ pin, name, startsAt, expiresAt });
+      saveAdmins(); updateAdminList(); hideCreateAdminModal(); showNotif('Hôte ajouté : ' + name);
+    }
+
+    function deleteAdmin(pin) {
+      const admin = adminAccounts.find(a => a.pin === pin);
+      if (!admin) return;
+      if (confirm('Supprimer l\'accès pour ' + admin.name + ' ?')) {
+        adminAccounts = adminAccounts.filter(a => a.pin !== pin);
+        saveAdmins(); updateAdminList(); showNotif('Accès supprimé');
+      }
+    }
+
+    function updateAdminList() {
+      const el = document.getElementById('adminList');
+      if (!el) return;
+      if (adminAccounts.length === 0) {
+        el.innerHTML = '<div style="color:var(--palette-text-secondary);padding:16px 0;font-size:14px;">Aucun hôte supplémentaire</div>';
+        return;
+      }
+      let html = '<div class="code-list-title" style="border-top:none; padding-top:0;">Hôtes enregistrés</div>';
+      adminAccounts.forEach(a => {
+        const now = Date.now();
+        const notStarted = a.startsAt && now < a.startsAt;
+        const expired = a.expiresAt && now > a.expiresAt;
+        const expiryText = formatAdminExpiry(a);
+        const daysLeft = a.expiresAt ? Math.floor((a.expiresAt - now) / 86400000) : 999;
+        const expiryCls = expired ? 'expired' : (notStarted ? 'soon' : (daysLeft <= 7 ? 'soon' : 'ok'));
+        html += '<div class="admin-item' + (expired ? ' expired-admin' : '') + '"><div class="admin-info"><div class="admin-name">' + a.name + '</div><div class="admin-pin">PIN: ' + a.pin + '</div>' + (expiryText ? '<div class="admin-expiry ' + expiryCls + '">' + expiryText + '</div>' : '') + '</div><button class="btn-delete" onclick="deleteAdmin(\'' + a.pin + '\')">Supprimer</button></div>';
+      });
+      el.innerHTML = html;
+    }
+
+    // ===== MQTT INVITE (code ephemere) =====
+    let guestInput = '';
+
+    function addGuestDigit(d) {
+      if (guestInput.length >= 6) return;
+      guestInput += d;
+      document.getElementById('codeDisplay').textContent = guestInput + (guestInput.length < 6 ? '_' : '');
+    }
+    function removeGuestDigit() {
+      guestInput = guestInput.slice(0, -1);
+      document.getElementById('codeDisplay').textContent = guestInput ? guestInput + (guestInput.length < 6 ? '_' : '') : '_';
+    }
+    function clearGuest() {
+      guestInput = '';
+      document.getElementById('codeDisplay').textContent = '_';
+      document.getElementById('guestResult').innerHTML = '';
+    }
+
+    function handleGuestCodeResult(msg) {
+      const resultEl = document.getElementById('guestResult');
+      if (msg === 'OK') {
+        resultEl.innerHTML = '<div class="result-msg success">Code valide. Porte déverrouillée (5s)</div>';
+        setTimeout(clearGuest, 5000);
+      } else {
+        document.getElementById('guestResult').innerHTML = '';
+        triggerEffractionAlarm(); // ALARME MAUVAIS CODE
+      }
+    }
+
+    function submitGuestCode() {
+      if (guestInput.length !== 6) return;
+      const entry = codeHistory.find(c => c.code === guestInput && c.status === 'waiting');
+      if (entry && isCodeExpired(entry)) {
+        triggerEffractionAlarm();
+        return;
+      }
+      document.getElementById('guestResult').innerHTML = '<div class="result-msg checking">Vérification...</div>';
+      if (client) client.publish(topicUseCode, guestInput);
+    }
+
+    // ===== BOUTON ALARME =====
+    let alarmActive = false;
+
+    function startAlarm() {
+      if (!client || alarmActive) return;
+      alarmActive = true;
+      document.getElementById('btnAlarme').classList.add('alarming');
+      document.getElementById('btnAlarme').textContent = 'ALARME ACTIVÉE...';
+      client.publish(topicAlarme, 'ON');
+    }
+
+    function stopAlarm() {
+      if (!client || !alarmActive) return;
+      alarmActive = false;
+      document.getElementById('btnAlarme').classList.remove('alarming');
+      document.getElementById('btnAlarme').innerHTML = 'Maintenir pour l\'alarme';
+      client.publish(topicAlarme, 'OFF');
+    }
+
+    const btnAlarmeEl = document.getElementById('btnAlarme');
+    if (btnAlarmeEl) {
+      btnAlarmeEl.addEventListener('mousedown', startAlarm);
+      btnAlarmeEl.addEventListener('mouseup', stopAlarm);
+      btnAlarmeEl.addEventListener('mouseleave', stopAlarm);
+      btnAlarmeEl.addEventListener('touchstart', function(e) { e.preventDefault(); startAlarm(); });
+      btnAlarmeEl.addEventListener('touchend', stopAlarm);
+      btnAlarmeEl.addEventListener('touchcancel', stopAlarm);
+    }
+
+    // ===== CLAVIER PC / PAVE NUMERIQUE =====
+    function isScreenVisible(id) {
+      const el = document.getElementById(id);
+      return el && !el.classList.contains('hidden');
+    }
+
+    function getDigitFromKeyboard(e) {
+      if (/^[0-9]$/.test(e.key)) return e.key;
+      const numpadMatch = /^Numpad([0-9])$/.exec(e.code || '');
+      if (numpadMatch) return numpadMatch[1];
+      const numpadNavToDigit = { Insert: '0', End: '1', ArrowDown: '2', PageDown: '3', ArrowLeft: '4', Clear: '5', ArrowRight: '6', Home: '7', ArrowUp: '8', PageUp: '9' };
+      if (e.location === 3 && numpadNavToDigit[e.key] !== undefined) return numpadNavToDigit[e.key];
+      const keyCode = typeof e.keyCode === 'number' ? e.keyCode : e.which;
+      if (typeof keyCode === 'number' && keyCode >= 96 && keyCode <= 105) return String(keyCode - 96);
+      const navKeyCodeToDigit = { 45: '0', 35: '1', 40: '2', 34: '3', 37: '4', 12: '5', 39: '6', 36: '7', 38: '8', 33: '9' };
+      if (e.location === 3 && typeof keyCode === 'number' && navKeyCodeToDigit[keyCode] !== undefined) return navKeyCodeToDigit[keyCode];
+      if (typeof keyCode === 'number' && keyCode >= 48 && keyCode <= 57) return String(keyCode - 48);
+      return null;
+    }
+
+    document.addEventListener('keydown', function(e) {
+      const digit = getDigitFromKeyboard(e);
+
+      if (isScreenVisible('pinScreen')) {
+        if (digit !== null) { e.preventDefault(); addDigit(digit); return; }
+        if (e.key === 'Backspace') { e.preventDefault(); removeDigit(); return; }
+        if (e.key === 'Delete') { e.preventDefault(); clearPin(); return; }
+      }
+
+      if (isScreenVisible('guestScreen')) {
+        if (digit !== null) { e.preventDefault(); addGuestDigit(digit); return; }
+        if (e.key === 'Backspace') { e.preventDefault(); removeGuestDigit(); return; }
+        if (e.key === 'Delete') { e.preventDefault(); clearGuest(); return; }
+        if (e.key === 'Enter') { e.preventDefault(); submitGuestCode(); return; }
+      }
+    }, true);
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Porte Connectée</title>
+  
+  <!-- === CONFIGURATION iOS (PWA) === -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sézame">
+  <link rel="apple-touch-icon" href="Porte_rose.png">
+  
+  <link rel="icon" type="image/png" href="logo_trans_rose.png">
+  <style>
+    /* === VARIABLES & DESIGN SYSTEM AIRBNB === */
+    :root {
       --palette-bg-primary-core: #ff385c;      /* Rausch Red */
       --palette-bg-tertiary-core: #e00b41;     /* Deep Rausch */
       --palette-text-primary-error: #c13515;   /* Error Red */
