@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Porte Connectée</title>
+  <link rel="icon" type="image/png" href="logo_trans_rose.png">
   <style>
     /* === VARIABLES & DESIGN SYSTEM AIRBNB === */
     :root {
@@ -36,6 +37,9 @@
       align-items: center;
       padding: 20px;
     }
+    body.site-ready {
+      animation: pageFadeIn 0.45s ease-out;
+    }
 
     /* === CONTENEURS & CARTES === */
     .screen {
@@ -48,10 +52,14 @@
       width: 100%;
       transition: all 0.3s ease;
     }
+    .screen-start {
+      animation: cardIntro 0.7s ease-out;
+    }
     .hidden { display: none !important; }
 
     /* === TYPOGRAPHIE === */
     .icon { font-size: 3em; margin-bottom: 24px; }
+    .brand-logo { height: 70px; margin-bottom: 24px; object-fit: contain; }
     h1 { 
       font-size: 28px; 
       font-weight: 700; 
@@ -107,6 +115,13 @@
       border: 1px solid var(--palette-text-primary);
     }
     .btn-outline:hover:not(:disabled) { background-color: var(--palette-surface-light); }
+    .btn-guest {
+      color: var(--palette-bg-primary-core);
+      border-color: var(--palette-bg-primary-core);
+    }
+    .btn-guest:hover:not(:disabled) {
+      background-color: #fff1f4;
+    }
 
     /* === CLAVIER PIN & CIRCULAR CONTROLS === */
     .pin-dots {
@@ -161,6 +176,32 @@
       cursor: pointer; 
       font-size: 14px; 
       font-weight: 600;
+    }
+    .door-icon {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      margin-bottom: 20px;
+    }
+    .panel-logo {
+      height: 52px;
+      margin-bottom: 18px;
+      object-fit: contain;
+    }
+
+    @keyframes pageFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes cardIntro {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     /* === CONTROLE ADMIN & STATUTS === */
@@ -395,17 +436,17 @@
 <body>
 
   <!-- ========== ECRAN 1 : CHOIX ========== -->
-  <div class="screen" id="choiceScreen">
-    <div class="icon">🚪</div>
+  <div class="screen screen-start" id="choiceScreen">
+    <img src="logo_trans_rose.png" alt="Logo de la marque" class="brand-logo">
     <h1>Porte Connectée</h1>
     <div class="subtitle">Contrôle à distance sécurisé</div>
     <button class="choice-btn btn-dark" onclick="showScreen('pinScreen')">Connexion Hôte</button>
-    <button class="choice-btn btn-outline" onclick="showScreen('guestScreen')">J'ai un code d'invité</button>
+    <button class="choice-btn btn-outline btn-guest" onclick="showScreen('guestScreen')">J'ai un code invité</button>
   </div>
 
   <!-- ========== ECRAN 2a : PIN ADMIN ========== -->
   <div class="screen hidden" id="pinScreen">
-    <div class="icon">🔒</div>
+    <img src="Porte_rose.png" alt="Icône porte" class="door-icon">
     <h1>Accès Hôte</h1>
     <div class="subtitle">Entrez votre code PIN</div>
     <div class="pin-dots" id="pinDots">
@@ -434,7 +475,7 @@
 
   <!-- ========== ECRAN 2b : CODE INVITE ========== -->
   <div class="screen hidden" id="guestScreen">
-    <div class="icon">🎫</div>
+    <img src="Porte_rose.png" alt="Icône porte" class="door-icon">
     <h1>Code Invité</h1>
     <div class="subtitle">Entrez le code à 6 chiffres</div>
     <div class="code-input-display" id="codeDisplay">_</div>
@@ -461,6 +502,7 @@
 
   <!-- ========== ECRAN 3 : CONTROLE ADMIN ========== -->
   <div class="screen hidden" id="controlScreen">
+    <img src="logo_trans_rose.png" alt="Logo Sézame" class="panel-logo">
     <div class="welcome-msg" id="welcomeMsg">
       Bonjour, <span class="name" id="welcomeName">Hôte</span>
       <span class="role" id="welcomeRole"></span>
@@ -468,8 +510,9 @@
 
     <div class="status waiting" id="status">Vérification de la porte...</div>
 
-    <button class="btn btn-dark" id="btnOn" onclick="send('ON')" disabled>Déverrouiller</button>
-    <button class="btn btn-outline" id="btnOff" onclick="send('OFF')" disabled>Verrouiller</button>
+    <button class="btn btn-dark" id="btnOn" onclick="sendUnlockPulse()" disabled>Déverrouiller</button>
+    <button class="btn btn-primary" id="btnHold" onclick="sendHoldOpen()" disabled>Laisser ouvert</button>
+    <button class="btn btn-outline hidden" id="btnOff" onclick="lockDoor()" disabled>Verrouiller</button>
 
     <!-- ALARME -->
     <div class="separator"></div>
@@ -541,7 +584,7 @@
   <script>
     // ===== SUPER ADMIN PIN =====
     const SUPER_ADMIN_PIN = '7423';
-    const SUPER_ADMIN_NAME = 'Admin Principal';
+    const SUPER_ADMIN_NAME = 'Propriétaire';
     // ============================
 
     const CODE_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 heures en ms
@@ -705,6 +748,7 @@
       });
       const connexEl = document.getElementById('adminConnexion');
       const btnOn = document.getElementById('btnOn');
+      const btnHold = document.getElementById('btnHold');
       const btnOff = document.getElementById('btnOff');
       const btnAlarmeEl = document.getElementById('btnAlarme');
 
@@ -712,7 +756,9 @@
         connexEl.className = 'connexion ok';
         connexEl.innerHTML = '<span class="dot green"></span> Synchronisé';
         btnOn.disabled = false;
-        btnOff.disabled = false;
+        if (btnHold) btnHold.disabled = false;
+        btnOff.disabled = true;
+        btnOff.classList.add('hidden');
         if (btnAlarmeEl) btnAlarmeEl.disabled = false;
         client.subscribe(topicState);
         client.subscribe(topicCodeUsed);
@@ -770,17 +816,65 @@
 
     function updateAdminUI(state) {
       const statusEl = document.getElementById('status');
-      if (state === 'ON') {
+      const btnOff = document.getElementById('btnOff');
+      if (state === 'HOLD') {
+        statusEl.className = 'status on';
+        statusEl.textContent = 'Porte maintenue ouverte';
+        if (btnOff) {
+          btnOff.classList.remove('hidden');
+          btnOff.disabled = false;
+        }
+      } else if (state === 'ON') {
         statusEl.className = 'status on';
         statusEl.textContent = 'Porte déverrouillée';
+        if (btnOff) {
+          btnOff.classList.remove('hidden');
+          btnOff.disabled = false;
+        }
       } else {
         statusEl.className = 'status off';
         statusEl.textContent = 'Porte verrouillée';
+        if (btnOff) {
+          btnOff.disabled = true;
+          btnOff.classList.add('hidden');
+        }
       }
     }
 
     function send(command) {
       if (client) client.publish(topicCmd, command);
+    }
+
+    function sendUnlockPulse() {
+      send('ON');
+    }
+
+    function sendHoldOpen() {
+      send('HOLD');
+      const btnOff = document.getElementById('btnOff');
+      if (btnOff) {
+        btnOff.classList.remove('hidden');
+        btnOff.disabled = false;
+      }
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.className = 'status on';
+        statusEl.textContent = 'Porte maintenue ouverte';
+      }
+    }
+
+    function lockDoor() {
+      send('OFF');
+      const btnOff = document.getElementById('btnOff');
+      if (btnOff) {
+        btnOff.disabled = true;
+        btnOff.classList.add('hidden');
+      }
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.className = 'status off';
+        statusEl.textContent = 'Porte verrouillée';
+      }
     }
 
     // ===== GENERATION DE CODES JETABLES =====
@@ -1023,6 +1117,10 @@
       guestInput += d;
       document.getElementById('codeDisplay').textContent = guestInput + (guestInput.length < 6 ? '_' : '');
     }
+    function removeGuestDigit() {
+      guestInput = guestInput.slice(0, -1);
+      document.getElementById('codeDisplay').textContent = guestInput ? guestInput + (guestInput.length < 6 ? '_' : '') : '_';
+    }
     function clearGuest() {
       guestInput = '';
       document.getElementById('codeDisplay').textContent = '_';
@@ -1135,6 +1233,116 @@
       btnAlarmeEl.addEventListener('touchend', stopAlarm);
       btnAlarmeEl.addEventListener('touchcancel', stopAlarm);
     }
+
+    // ===== CLAVIER PC / PAVE NUMERIQUE =====
+    window.addEventListener('load', function() {
+      document.body.classList.add('site-ready');
+    });
+
+    function isScreenVisible(id) {
+      const el = document.getElementById(id);
+      return el && !el.classList.contains('hidden');
+    }
+
+    function getDigitFromKeyboard(e) {
+      if (/^[0-9]$/.test(e.key)) return e.key;
+
+      // Numpad digits on most modern browsers
+      const numpadMatch = /^Numpad([0-9])$/.exec(e.code || '');
+      if (numpadMatch) return numpadMatch[1];
+
+      // Numpad with NumLock OFF can emit navigation keys
+      const numpadNavToDigit = {
+        Insert: '0',
+        End: '1',
+        ArrowDown: '2',
+        PageDown: '3',
+        ArrowLeft: '4',
+        Clear: '5',
+        ArrowRight: '6',
+        Home: '7',
+        ArrowUp: '8',
+        PageUp: '9'
+      };
+      if (e.location === 3 && numpadNavToDigit[e.key] !== undefined) {
+        return numpadNavToDigit[e.key];
+      }
+
+      // Legacy fallback: keyCode/which 96..105 are numpad 0..9
+      const keyCode = typeof e.keyCode === 'number' ? e.keyCode : e.which;
+      if (typeof keyCode === 'number' && keyCode >= 96 && keyCode <= 105) {
+        return String(keyCode - 96);
+      }
+
+      // Legacy fallback for NumLock OFF on numpad (requires numpad location)
+      const navKeyCodeToDigit = {
+        45: '0', // Insert
+        35: '1', // End
+        40: '2', // ArrowDown
+        34: '3', // PageDown
+        37: '4', // ArrowLeft
+        12: '5', // Clear (legacy)
+        39: '6', // ArrowRight
+        36: '7', // Home
+        38: '8', // ArrowUp
+        33: '9'  // PageUp
+      };
+      if (e.location === 3 && typeof keyCode === 'number' && navKeyCodeToDigit[keyCode] !== undefined) {
+        return navKeyCodeToDigit[keyCode];
+      }
+
+      // Legacy fallback: top-row digits 48..57
+      if (typeof keyCode === 'number' && keyCode >= 48 && keyCode <= 57) {
+        return String(keyCode - 48);
+      }
+
+      return null;
+    }
+
+    document.addEventListener('keydown', function(e) {
+      const digit = getDigitFromKeyboard(e);
+
+      if (isScreenVisible('pinScreen')) {
+        if (digit !== null) {
+          e.preventDefault();
+          addDigit(digit);
+          return;
+        }
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          removeDigit();
+          return;
+        }
+        if (e.key === 'Delete') {
+          e.preventDefault();
+          clearPin();
+          return;
+        }
+      }
+
+      if (isScreenVisible('guestScreen')) {
+        if (digit !== null) {
+          e.preventDefault();
+          addGuestDigit(digit);
+          return;
+        }
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          removeGuestDigit();
+          return;
+        }
+        if (e.key === 'Delete') {
+          e.preventDefault();
+          clearGuest();
+          return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitGuestCode();
+          return;
+        }
+      }
+    }, true);
   </script>
 </body>
 </html>
