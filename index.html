@@ -590,10 +590,8 @@
   <!-- Intégration de la librairie MQTT -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
-    // ===== SUPER ADMIN PIN =====
-    const SUPER_ADMIN_PIN = '6767';
-    const SUPER_ADMIN_NAME = 'Propriétaire';
-    // ============================
+    // NOTE DE SECURITÉ : Le code PIN Super Admin a été SUPPRIMÉ du code client.
+    // L'Arduino est le seul à valider le PIN propriétaire désormais.
 
     const CODE_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 heures en ms
 
@@ -608,12 +606,15 @@
     const topicHistory    = 'porte-epcrd-2026/history';
     const topicAdmins     = 'porte-epcrd-2026/admins';
     const topicAlarme     = 'porte-epcrd-2026/alarme';
+    // NOUVEAUX TOPICS DE SÉCURITÉ
+    const topicAuthReq    = 'porte-epcrd-2026/auth_req';
+    const topicAuthRes    = 'porte-epcrd-2026/auth_res';
 
+    // Un seul client MQTT global pour des performances maximales
     let client = null;
-    let guestClient = null;
     let isSuperAdmin = false;
     let currentUserName = '';
-    let currentUserPin = ''; // Ajout pour mémoriser l'utilisateur actuel
+    let currentUserPin = '';
 
     // ===== ADMIN ACCOUNTS =====
     let adminAccounts = [];
@@ -675,17 +676,153 @@
       return 'Expire dans ' + days + ' jour' + (days > 1 ? 's' : '');
     }
 
-    // ===== NAVIGATION =====
+    // ===== NAVIGATION & MQTT GLOBAL =====
+    window.addEventListener('load', function() {
+      document.body.classList.add('site-ready');
+      initGlobalMQTT(); // Connexion immédiate en arrière-plan
+    });
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
-      if (id === 'guestScreen' && !guestClient) connectGuestMQTT();
     }
 
-    // ===== PIN ADMIN =====
+    // === LE "GARBAGE COLLECTOR" (Nettoyeur temporel des codes) ===
+    function cleanExpiredCodes() {
+      // Seul un admin loggé s'occupe du nettoyage (évite les doublons depuis la page invité)
+      if (!currentUserName) return;
+      
+      let historyChanged = false;
+      
+      codeHistory.forEach(c => {
+        if (c.status === 'waiting' && isCodeExpired(c)) {
+          c.status = 'expired';
+          historyChanged = true;
+          // Ordre à l'Arduino de supprimer physiquement le code de son EEPROM
+          if (client && client.connected) {
+            client.publish(topicDelCode, c.code);
+          }
+        }
+      });
+      
+      if (historyChanged) {
+        saveHistory();
+        updateCodeList();
+      }
+    }
+
+    function initGlobalMQTT() {
+      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: 'app-porte-' + Math.random().toString(36).substr(2, 8),
+        clean: true
+      });
+
+      client.on('connect', function() {
+        // MAJ Interface Invité
+        const guestConnex = document.getElementById('guestConnexion');
+        if (guestConnex) { guestConnex.className = 'connexion ok'; guestConnex.innerHTML = '<span class="dot green"></span> Prêt'; }
+
+        // MAJ Interface Dashboard
+        const adminConnex = document.getElementById('adminConnexion');
+        if (adminConnex) {
+           adminConnex.className = 'connexion ok';
+           adminConnex.innerHTML = '<span class="dot green"></span> Synchronisé';
+           if (currentUserName) {
+             const btnOn = document.getElementById('btnOn');
+             const btnHold = document.getElementById('btnHold');
+             const btnAlarmeEl = document.getElementById('btnAlarme');
+             if (btnOn) btnOn.disabled = false;
+             if (btnHold) btnHold.disabled = false;
+             if (btnAlarmeEl) btnAlarmeEl.disabled = false;
+           }
+        }
+
+        // Abonnements globaux immédiats (permet de précharger les données)
+        client.subscribe(topicAdmins);
+        client.subscribe(topicCodeResult);
+        client.subscribe(topicAuthRes);
+
+        // Rétablissement des abonnements privés si déjà connecté
+        if (currentUserName) {
+           client.subscribe(topicState);
+           client.subscribe(topicCodeUsed);
+           client.subscribe(topicAddCode);
+           client.subscribe(topicHistory);
+        }
+
+        // Lancement immédiat et régulier du nettoyeur temporel
+        cleanExpiredCodes();
+        setInterval(cleanExpiredCodes, 60000); // Exécuté toutes les 60 secondes
+      });
+
+      client.on('error', function() {
+        const adminConnex = document.getElementById('adminConnexion');
+        if (adminConnex) { adminConnex.className = 'connexion ko'; adminConnex.innerHTML = '<span class="dot red"></span> Hors ligne'; }
+        const guestConnex = document.getElementById('guestConnexion');
+        if (guestConnex) { guestConnex.className = 'connexion ko'; guestConnex.innerHTML = '<span class="dot red"></span> Hors ligne'; }
+      });
+
+      client.on('message', function(topic, message) {
+        const msg = message.toString();
+
+        if (topic === topicAuthRes) handleAuthResponse(msg);
+        else if (topic === topicCodeResult) handleGuestCodeResult(msg);
+        else if (topic === topicState) updateAdminUI(msg);
+        else if (topic === topicCodeUsed) markCodeUsed(msg);
+        else if (topic === topicAdmins) handleAdminsSync(msg);
+        else if (topic === topicHistory) handleHistorySync(msg);
+        else if (topic === topicAddCode) {
+          const exists = codeHistory.find(c => c.code === msg);
+          if (!exists) {
+            const now = new Date();
+            codeHistory.unshift({ code: msg, status: 'waiting', time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'), from: 'autre hôte', createdAt: Date.now() });
+            saveHistory();
+            if (currentUserName) updateCodeList();
+            showNotif('Nouveau code invité créé : ' + msg);
+          }
+        }
+      });
+    }
+
+    // ===== GESTION DES SYNCHRONISATIONS MQTT =====
+    function handleAdminsSync(msg) {
+      try {
+        const remoteAdmins = JSON.parse(msg);
+        if (Array.isArray(remoteAdmins)) {
+          adminAccounts = remoteAdmins;
+          try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
+          if (currentUserName && isSuperAdmin) updateAdminList();
+          
+          if (isScreenVisible('controlScreen')) {
+            checkCurrentAccess();
+          }
+        }
+      } catch(e) {}
+    }
+
+    function handleHistorySync(msg) {
+      try {
+        const remoteHistory = JSON.parse(msg);
+        if (Array.isArray(remoteHistory) && remoteHistory.length > 0) {
+          const merged = new Map();
+          remoteHistory.forEach(c => merged.set(c.code, c));
+          codeHistory.forEach(c => {
+            const existing = merged.get(c.code);
+            if (!existing) merged.set(c.code, c);
+            else if (c.status === 'used' && existing.status === 'waiting') merged.set(c.code, c);
+          });
+          codeHistory = Array.from(merged.values());
+          try { localStorage.setItem('porte_codeHistory', JSON.stringify(codeHistory)); } catch(e) {}
+          if (currentUserName) updateCodeList();
+        }
+      } catch(e) {}
+    }
+
+    // ===== PIN ADMIN : VALIDATION SÉCURISÉE =====
     let pinInput = '';
     let attempts = 0;
     const maxAttempts = 5;
+    let authTimeout = null;
 
     function addDigit(d) {
       if (pinInput.length >= 4) return;
@@ -702,13 +839,7 @@
     }
     
     function checkPin() {
-      if (pinInput === SUPER_ADMIN_PIN) {
-        isSuperAdmin = true;
-        currentUserName = SUPER_ADMIN_NAME;
-        currentUserPin = pinInput;
-        loginSuccess();
-        return;
-      }
+      // 1. Vérification locale pour les hôtes secondaires
       const admin = adminAccounts.find(a => a.pin === pinInput);
       if (admin) {
         const now = Date.now();
@@ -731,14 +862,49 @@
         loginSuccess();
         return;
       }
-      attempts++;
-      for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
-      if (attempts >= maxAttempts) {
-        document.getElementById('errorMsg').textContent = 'Trop de tentatives. Veuillez recharger la page.';
-        document.querySelectorAll('#pinScreen .key').forEach(k => k.disabled = true);
+
+      // 2. Vérification Super Admin sécurisée via l'Arduino
+      document.getElementById('errorMsg').style.color = '#b26a00';
+      document.getElementById('errorMsg').textContent = 'Vérification sécurisée...';
+      
+      if (client && client.connected) {
+        client.publish(topicAuthReq, pinInput);
+        
+        // Timeout de sécurité si l'Arduino ne répond pas
+        authTimeout = setTimeout(() => {
+          document.getElementById('errorMsg').style.color = 'var(--palette-text-primary-error)';
+          document.getElementById('errorMsg').textContent = 'Erreur : Arduino injoignable.';
+          setTimeout(() => { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }, 2000);
+        }, 5000);
       } else {
-        document.getElementById('errorMsg').textContent = 'Code incorrect (' + (maxAttempts - attempts) + ' essais restants)';
-        setTimeout(() => { pinInput = ''; updateDots(); }, 600);
+        document.getElementById('errorMsg').style.color = 'var(--palette-text-primary-error)';
+        document.getElementById('errorMsg').textContent = 'Serveur déconnecté, veuillez patienter.';
+        setTimeout(() => { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }, 2000);
+      }
+    }
+
+    function handleAuthResponse(response) {
+      if (authTimeout) clearTimeout(authTimeout);
+      
+      if (response === 'ACCES_VALIDE') {
+        isSuperAdmin = true;
+        currentUserName = 'Propriétaire'; // Titre officiel du Super Admin
+        currentUserPin = pinInput; // Stocké provisoirement pour la session
+        pinInput = '';
+        updateDots();
+        document.getElementById('errorMsg').textContent = '';
+        loginSuccess();
+      } else {
+        attempts++;
+        for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
+        document.getElementById('errorMsg').style.color = 'var(--palette-text-primary-error)';
+        if (attempts >= maxAttempts) {
+          document.getElementById('errorMsg').textContent = 'Trop de tentatives. Veuillez recharger la page.';
+          document.querySelectorAll('#pinScreen .key').forEach(k => k.disabled = true);
+        } else {
+          document.getElementById('errorMsg').textContent = 'Code incorrect (' + (maxAttempts - attempts) + ' essais restants)';
+          setTimeout(() => { pinInput = ''; updateDots(); document.getElementById('errorMsg').textContent = ''; }, 800);
+        }
       }
     }
 
@@ -747,9 +913,26 @@
       document.getElementById('welcomeName').textContent = currentUserName;
       document.getElementById('welcomeRole').textContent = isSuperAdmin ? 'Admin Principal' : 'Hôte';
       document.getElementById('superAdminSection').classList.toggle('hidden', !isSuperAdmin);
+      
+      // On s'assure que l'historique est propre avant de l'afficher
+      cleanExpiredCodes();
       updateCodeList();
       updateAdminList();
-      connectAdminMQTT();
+      
+      // Activer les contrôles si le réseau est OK
+      if (client && client.connected) {
+         client.subscribe(topicState);
+         client.subscribe(topicCodeUsed);
+         client.subscribe(topicAddCode);
+         client.subscribe(topicHistory);
+
+         const btnOn = document.getElementById('btnOn');
+         const btnHold = document.getElementById('btnHold');
+         const btnAlarmeEl = document.getElementById('btnAlarme');
+         if (btnOn) btnOn.disabled = false;
+         if (btnHold) btnHold.disabled = false;
+         if (btnAlarmeEl) btnAlarmeEl.disabled = false;
+      }
       
       // Vérification périodique de révocation/expiration pour les hôtes standards
       if (!isSuperAdmin) {
@@ -783,85 +966,6 @@
           location.reload();
         }, 3000);
       }
-    }
-
-    // ===== MQTT ADMIN =====
-    function connectAdminMQTT() {
-      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-        clientId: 'admin-porte-' + Math.random().toString(36).substr(2, 8),
-        clean: true
-      });
-      const connexEl = document.getElementById('adminConnexion');
-      const btnOn = document.getElementById('btnOn');
-      const btnHold = document.getElementById('btnHold');
-      const btnOff = document.getElementById('btnOff');
-      const btnAlarmeEl = document.getElementById('btnAlarme');
-
-      client.on('connect', function() {
-        connexEl.className = 'connexion ok';
-        connexEl.innerHTML = '<span class="dot green"></span> Synchronisé';
-        btnOn.disabled = false;
-        if (btnHold) btnHold.disabled = false;
-        btnOff.disabled = true;
-        btnOff.classList.add('hidden');
-        if (btnAlarmeEl) btnAlarmeEl.disabled = false;
-        client.subscribe(topicState);
-        client.subscribe(topicCodeUsed);
-        client.subscribe(topicAddCode);
-        client.subscribe(topicHistory);
-        client.subscribe(topicAdmins);
-      });
-      client.on('message', function(topic, message) {
-        const msg = message.toString();
-        if (topic === topicState) updateAdminUI(msg);
-        else if (topic === topicHistory) {
-          try {
-            const remoteHistory = JSON.parse(msg);
-            if (Array.isArray(remoteHistory) && remoteHistory.length > 0) {
-              const merged = new Map();
-              remoteHistory.forEach(c => merged.set(c.code, c));
-              codeHistory.forEach(c => {
-                const existing = merged.get(c.code);
-                if (!existing) merged.set(c.code, c);
-                else if (c.status === 'used' && existing.status === 'waiting') merged.set(c.code, c);
-              });
-              codeHistory = Array.from(merged.values());
-              try { localStorage.setItem('porte_codeHistory', JSON.stringify(codeHistory)); } catch(e) {}
-              updateCodeList();
-            }
-          } catch(e) {}
-        }
-        else if (topic === topicAdmins) {
-          try {
-            const remoteAdmins = JSON.parse(msg);
-            if (Array.isArray(remoteAdmins)) {
-              adminAccounts = remoteAdmins;
-              try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
-              updateAdminList();
-              
-              // NEW: Vérifier instantanément si le compte actuel vient d'être supprimé via ce message réseau
-              if (isScreenVisible('controlScreen')) {
-                checkCurrentAccess();
-              }
-            }
-          } catch(e) {}
-        }
-        else if (topic === topicCodeUsed) markCodeUsed(msg);
-        else if (topic === topicAddCode) {
-          const exists = codeHistory.find(c => c.code === msg);
-          if (!exists) {
-            const now = new Date();
-            codeHistory.unshift({ code: msg, status: 'waiting', time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0'), from: 'autre hôte', createdAt: Date.now() });
-            saveHistory();
-            updateCodeList();
-            showNotif('Nouveau code invité créé par un autre hôte : ' + msg);
-          }
-        }
-      });
-      client.on('error', function() {
-        connexEl.className = 'connexion ko';
-        connexEl.innerHTML = '<span class="dot red"></span> Hors ligne';
-      });
     }
 
     function updateAdminUI(state) {
@@ -934,7 +1038,7 @@
       const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
       codeHistory.unshift({ code: code, status: 'waiting', time: time, from: currentUserName, createdAt: Date.now() });
       saveHistory();
-      if (client) client.publish(topicAddCode, code);
+      if (client) client.publish(topicAddCode, code); // L'arduino le sauve en EEPROM
       const el = document.getElementById('generatedCode');
       document.getElementById('codeText').textContent = code;
       el.classList.remove('hidden');
@@ -968,6 +1072,12 @@
 
     function clearHistory() {
       if (confirm('Êtes-vous sûr de vouloir supprimer l\'historique des codes ?')) {
+        // Optionnel : on pourrait aussi nettoyer l'EEPROM de l'Arduino en envoyant un delcode pour chaque code en attente
+        codeHistory.forEach(c => {
+           if (c.status === 'waiting' && client && client.connected) {
+             client.publish(topicDelCode, c.code);
+           }
+        });
         codeHistory = [];
         saveHistory();
         updateCodeList();
@@ -979,7 +1089,7 @@
       const entry = codeHistory.find(c => c.code === code);
       if (!entry) return;
       if (entry.status === 'waiting' && client) {
-        client.publish(topicDelCode, code);
+        client.publish(topicDelCode, code); // On prévient l'Arduino de l'effacer de l'EEPROM
       }
       codeHistory = codeHistory.filter(c => c.code !== code);
       saveHistory();
@@ -1083,7 +1193,6 @@
 
       if (!name) { errEl.textContent = 'Veuillez saisir un nom'; return; }
       if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'Le code PIN doit comporter 4 chiffres'; return; }
-      if (pin === SUPER_ADMIN_PIN) { errEl.textContent = 'Ce code PIN est réservé'; return; }
       if (adminAccounts.find(a => a.pin === pin)) { errEl.textContent = 'Ce code PIN est déjà utilisé'; return; }
 
       let startsAt = null, expiresAt = null, label = '';
@@ -1177,42 +1286,14 @@
       document.getElementById('guestResult').innerHTML = '';
     }
 
-    function connectGuestMQTT() {
-      guestClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-        clientId: 'guest-porte-' + Math.random().toString(36).substr(2, 8),
-        clean: true
-      });
-      const connexEl = document.getElementById('guestConnexion');
-      guestClient.on('connect', function() {
-        connexEl.className = 'connexion ok';
-        connexEl.innerHTML = '<span class="dot green"></span> Prêt';
-        guestClient.subscribe(topicCodeResult);
-        guestClient.subscribe(topicAdmins);
-      });
-      guestClient.on('message', function(topic, message) {
-        if (topic === topicCodeResult) {
-          const resultEl = document.getElementById('guestResult');
-          if (message.toString() === 'OK') {
-            resultEl.innerHTML = '<div class="result-msg success">Code valide. Porte déverrouillée (5s)</div>';
-            setTimeout(clearGuest, 5000);
-          } else {
-            resultEl.innerHTML = '<div class="result-msg fail">Code invalide ou expiré</div>';
-          }
-        }
-        else if (topic === topicAdmins) {
-          try {
-            const remoteAdmins = JSON.parse(message.toString());
-            if (Array.isArray(remoteAdmins)) {
-              adminAccounts = remoteAdmins;
-              try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
-            }
-          } catch(e) {}
-        }
-      });
-      guestClient.on('error', function() {
-        connexEl.className = 'connexion ko';
-        connexEl.innerHTML = '<span class="dot red"></span> Erreur réseau';
-      });
+    function handleGuestCodeResult(msg) {
+      const resultEl = document.getElementById('guestResult');
+      if (msg === 'OK') {
+        resultEl.innerHTML = '<div class="result-msg success">Code valide. Porte déverrouillée (5s)</div>';
+        setTimeout(clearGuest, 5000);
+      } else {
+        resultEl.innerHTML = '<div class="result-msg fail">Code invalide ou expiré</div>';
+      }
     }
 
     function submitGuestCode() {
@@ -1225,32 +1306,8 @@
       }
 
       document.getElementById('guestResult').innerHTML = '<div class="result-msg checking">Vérification...</div>';
-      if (guestClient) guestClient.publish(topicUseCode, guestInput);
+      if (client) client.publish(topicUseCode, guestInput);
     }
-
-    // ===== PRE-LOAD ADMIN LIST =====
-    (function preloadAdmins() {
-      const preClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-        clientId: 'preload-' + Math.random().toString(36).substr(2, 8),
-        clean: true
-      });
-      preClient.on('connect', function() {
-        preClient.subscribe(topicAdmins);
-      });
-      preClient.on('message', function(topic, message) {
-        if (topic === topicAdmins) {
-          try {
-            const remoteAdmins = JSON.parse(message.toString());
-            if (Array.isArray(remoteAdmins)) {
-              adminAccounts = remoteAdmins;
-              try { localStorage.setItem('porte_admins', JSON.stringify(adminAccounts)); } catch(e) {}
-            }
-          } catch(e) {}
-          preClient.end();
-        }
-      });
-      setTimeout(() => { try { preClient.end(); } catch(e) {} }, 5000);
-    })();
 
     // ===== BOUTON ALARME =====
     let alarmActive = false;
@@ -1285,10 +1342,6 @@
     }
 
     // ===== CLAVIER PC / PAVE NUMERIQUE =====
-    window.addEventListener('load', function() {
-      document.body.classList.add('site-ready');
-    });
-
     function isScreenVisible(id) {
       const el = document.getElementById(id);
       return el && !el.classList.contains('hidden');
@@ -1297,54 +1350,24 @@
     function getDigitFromKeyboard(e) {
       if (/^[0-9]$/.test(e.key)) return e.key;
 
-      // Numpad digits on most modern browsers
       const numpadMatch = /^Numpad([0-9])$/.exec(e.code || '');
       if (numpadMatch) return numpadMatch[1];
 
-      // Numpad with NumLock OFF can emit navigation keys
       const numpadNavToDigit = {
-        Insert: '0',
-        End: '1',
-        ArrowDown: '2',
-        PageDown: '3',
-        ArrowLeft: '4',
-        Clear: '5',
-        ArrowRight: '6',
-        Home: '7',
-        ArrowUp: '8',
-        PageUp: '9'
+        Insert: '0', End: '1', ArrowDown: '2', PageDown: '3', ArrowLeft: '4', 
+        Clear: '5', ArrowRight: '6', Home: '7', ArrowUp: '8', PageUp: '9'
       };
-      if (e.location === 3 && numpadNavToDigit[e.key] !== undefined) {
-        return numpadNavToDigit[e.key];
-      }
+      if (e.location === 3 && numpadNavToDigit[e.key] !== undefined) return numpadNavToDigit[e.key];
 
-      // Legacy fallback: keyCode/which 96..105 are numpad 0..9
       const keyCode = typeof e.keyCode === 'number' ? e.keyCode : e.which;
-      if (typeof keyCode === 'number' && keyCode >= 96 && keyCode <= 105) {
-        return String(keyCode - 96);
-      }
+      if (typeof keyCode === 'number' && keyCode >= 96 && keyCode <= 105) return String(keyCode - 96);
 
-      // Legacy fallback for NumLock OFF on numpad (requires numpad location)
       const navKeyCodeToDigit = {
-        45: '0', // Insert
-        35: '1', // End
-        40: '2', // ArrowDown
-        34: '3', // PageDown
-        37: '4', // ArrowLeft
-        12: '5', // Clear (legacy)
-        39: '6', // ArrowRight
-        36: '7', // Home
-        38: '8', // ArrowUp
-        33: '9'  // PageUp
+        45: '0', 35: '1', 40: '2', 34: '3', 37: '4', 12: '5', 39: '6', 36: '7', 38: '8', 33: '9'
       };
-      if (e.location === 3 && typeof keyCode === 'number' && navKeyCodeToDigit[keyCode] !== undefined) {
-        return navKeyCodeToDigit[keyCode];
-      }
+      if (e.location === 3 && typeof keyCode === 'number' && navKeyCodeToDigit[keyCode] !== undefined) return navKeyCodeToDigit[keyCode];
 
-      // Legacy fallback: top-row digits 48..57
-      if (typeof keyCode === 'number' && keyCode >= 48 && keyCode <= 57) {
-        return String(keyCode - 48);
-      }
+      if (typeof keyCode === 'number' && keyCode >= 48 && keyCode <= 57) return String(keyCode - 48);
 
       return null;
     }
@@ -1353,44 +1376,16 @@
       const digit = getDigitFromKeyboard(e);
 
       if (isScreenVisible('pinScreen')) {
-        if (digit !== null) {
-          e.preventDefault();
-          addDigit(digit);
-          return;
-        }
-        if (e.key === 'Backspace') {
-          e.preventDefault();
-          removeDigit();
-          return;
-        }
-        if (e.key === 'Delete') {
-          e.preventDefault();
-          clearPin();
-          return;
-        }
+        if (digit !== null) { e.preventDefault(); addDigit(digit); return; }
+        if (e.key === 'Backspace') { e.preventDefault(); removeDigit(); return; }
+        if (e.key === 'Delete') { e.preventDefault(); clearPin(); return; }
       }
 
       if (isScreenVisible('guestScreen')) {
-        if (digit !== null) {
-          e.preventDefault();
-          addGuestDigit(digit);
-          return;
-        }
-        if (e.key === 'Backspace') {
-          e.preventDefault();
-          removeGuestDigit();
-          return;
-        }
-        if (e.key === 'Delete') {
-          e.preventDefault();
-          clearGuest();
-          return;
-        }
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          submitGuestCode();
-          return;
-        }
+        if (digit !== null) { e.preventDefault(); addGuestDigit(digit); return; }
+        if (e.key === 'Backspace') { e.preventDefault(); removeGuestDigit(); return; }
+        if (e.key === 'Delete') { e.preventDefault(); clearGuest(); return; }
+        if (e.key === 'Enter') { e.preventDefault(); submitGuestCode(); return; }
       }
     }, true);
   </script>
